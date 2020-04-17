@@ -1,8 +1,7 @@
-from Thermo_1wire import Thermo
-from Sensor import BaseSensor
+from rpi.sensors.Thermo_1wire import Thermo
+from rpi.sensors.Sensor import BaseSensor
 import glob
 import os
-import csv
 
 
 class ThermoList(BaseSensor):
