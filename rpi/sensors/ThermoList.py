@@ -3,6 +3,10 @@ from rpi.sensors.Sensor import SensorLogging
 import glob
 import os
 
+import logging
+import threading
+from rpi.sensors.Thermo_1wire import Thermo
+
 
 class ThermoList(SensorLogging):
     def __init__(self):
@@ -13,15 +17,19 @@ class ThermoList(SensorLogging):
     
         self.sensor_list = list()
         
-        for i in device_folders:        
-            t = Thermo(os.path.basename(i))
-            self.sensor_list.append(t)
-            
-    def readAll(self):
-        result = list() 
-        for i in self.sensor_list:
-            result.append(i.read())
-        return result
+        self.logger = logging.getLogger(__name__)
 
-    def loop(self):
-        raise NotImplementedError
+        for i in device_folders:
+            t = Thermo(os.path.basename(i), self.sensorlogger)
+            self.sensor_list.append(t)
+            self.logger.debug("Found thermometer {} with name {}".format(i, t.name))
+
+        if len(Thermo.names) != len(self.sensor_list):
+            self.logger.warning("Not all known thermometers have been found")
+
+    def logging_loop(self):
+        for i in self.sensor_list:
+            self.logger.debug("Starting {}".format(i.name))
+            t = threading.Thread(target = i.logging_loop)
+            t.daemon = True
+            t.start()

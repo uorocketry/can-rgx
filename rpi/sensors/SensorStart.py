@@ -5,7 +5,7 @@ import time
 from multiprocessing import Process
 
 def start_sensors():
-    sensorList = []
+    sensorList = [ThermoList()]
 
     logging.getLogger(__name__).info("Starting sensor logging")
     for i in sensorList:
