@@ -4,7 +4,7 @@ from datetime import datetime
 
 from shared.customlogging.handler import MakeFileHandler
 from shared.customlogging.filter import SensorFilter
-from rpi.sensors.SensorStart import start_sensors
+from rpi.sensors.sensorstart import start_sensors
 
 #Setting up logging to console and file
 

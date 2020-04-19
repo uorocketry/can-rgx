@@ -1,8 +1,9 @@
 import threading
-from rpi.sensors.ThermoList import ThermoList
 import logging
 import time
 from multiprocessing import Process
+
+from rpi.sensors.thermometer import ThermoList
 
 def start_sensors():
     sensorList = [ThermoList()]
