@@ -1,12 +1,12 @@
 from rpi.sensors.Thermo_1wire import Thermo
-from rpi.sensors.Sensor import BaseSensor
+from rpi.sensors.Sensor import SensorLogging
 import glob
 import os
 
 
-class ThermoList(BaseSensor):
+class ThermoList(SensorLogging):
     def __init__(self):
-        super().__init__("thermo.csv", ["id", "timestamp", "value"])
+        super().__init__("thermometer", ["id", "value"])
         
         base_dir = '/sys/bus/w1/devices/'
         device_folders = glob.glob(base_dir + '28*')

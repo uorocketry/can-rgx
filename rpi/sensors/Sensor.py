@@ -1,42 +1,30 @@
-import os
-import csv
 from abc import ABC, abstractmethod
+import logging
+from datetime import datetime
 
-class BaseSensor(ABC):
-    def __init__(self, filename, dataRow):
+from shared.customlogging.formatter import CSVFormatter
+from shared.customlogging.handler import MakeFileHandler
+
+class SensorLogging(ABC):
+    '''
+    Base class for pretty much all sensors. This class main function is to create the logger for each sensors.
+    '''
+    def __init__(self, folderName, dataRow):
         '''
         Parameters:
-            filename : name of the file to use
-            dataRow : list representing the header of the csv file
+            folderName : name of the folder to use
+            dataRow : list representing the header of the csv file. Do not include timestamp, it will be included automatically
         '''
 
-        self.filename = filename
-        self.dataRow = dataRow
+        self.sensorlogger = logging.getLogger("sensorlog."+folderName)
 
+        csvHandler = MakeFileHandler("logs/sensor/"+folderName+"/"+datetime.now().strftime("{}_%Y-%m-%d %H-%M-%S.csv".format(folderName)))
+        csvHandler.setFormatter(CSVFormatter())
+        self.sensorlogger.addHandler(csvHandler)
+        self.sensorlogger.setLevel(logging.INFO)
 
-    def writeDataToFile(self, data):
-        file = None
-        
-        try:
-            if not os.path.exists(self.filename):
-                self.initFile()
-            file = open(self.filename, "a")
-                
-        except IOError:
-            print("Error opening file!")
-            return
-            
-        writer = csv.writer(file)
-        writer.writerow(data)
-        
-        file.close()
-
-
-    def initFile(self):
-        with open(self.filename, 'w', newline='') as file:
-            writer = csv.writer(file)
-            writer.writerow(self.dataRow)
+        self.sensorlogger.info(["timestamp", *dataRow])
 
     @abstractmethod
-    def loop(self):
+    def logging_loop(self):
         pass
