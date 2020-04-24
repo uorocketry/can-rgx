@@ -5,6 +5,7 @@ from datetime import datetime
 from shared.customlogging.handler import MakeFileHandler
 from shared.customlogging.filter import SensorFilter
 from rpi.sensors.sensorstart import start_sensors
+from rpi.network.server import server_listen_forever
 
 #Setting up logging to console and file
 
@@ -28,3 +29,5 @@ logger.addHandler(fileHandler)
 
  
 start_sensors()
+
+server_listen_forever()
