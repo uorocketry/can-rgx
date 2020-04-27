@@ -1,9 +1,11 @@
 import sys
 import logging
 from datetime import datetime
+import tkinter as tk
 
 from shared.customlogging.handler import MakeFileHandler
 from shared.customlogging.filter import SensorFilter
+import laptop.logginggui as logginggui
 
 #Setting up logging to console and file
 
@@ -24,3 +26,14 @@ fileHandler = MakeFileHandler("logs/laptop/"+datetime.now().strftime("laptop_%Y-
 fileHandler.setFormatter(loggingFormat)
 fileHandler.addFilter(loggingFilter)
 logger.addHandler(fileHandler)
+
+#Setup Logging for the GUI
+root = tk.Tk()
+
+logGUI = logginggui.LoggingGUI(root)
+guiHandler = logginggui.LoggingGUIHandler(logGUI)
+guiHandler.setFormatter(loggingFormat)
+guiHandler.addFilter(loggingFilter)
+logger.addHandler(guiHandler)
+
+root.mainloop()
