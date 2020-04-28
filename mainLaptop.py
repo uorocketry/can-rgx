@@ -2,10 +2,13 @@ import sys
 import logging
 from datetime import datetime
 import tkinter as tk
+import tkinter.messagebox
 
 from shared.customlogging.handler import MakeFileHandler
 from shared.customlogging.filter import SensorFilter
-import laptop.logginggui as logginggui
+import laptop.gui.logginggui as logginggui
+import laptop.gui.controlgui as controlgui
+import laptop.gui.statusframe as statusframe
 
 #Setting up logging to console and file
 
@@ -35,5 +38,16 @@ guiHandler = logginggui.LoggingGUIHandler(logGUI)
 guiHandler.setFormatter(loggingFormat)
 guiHandler.addFilter(loggingFilter)
 logger.addHandler(guiHandler)
+
+
+#Setup the GUI for controlling the experiment
+window2 = tk.Toplevel(root)
+controlGUI = controlgui.ControlGUI(window2)
+
+#Setup the status display
+statusHandler = statusframe.StatusHandler(controlGUI.status)
+statusHandler.setFormatter(loggingFormat)
+statusHandler.addFilter(loggingFilter)
+logger.addHandler(statusHandler)
 
 root.mainloop()
