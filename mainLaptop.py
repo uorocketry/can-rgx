@@ -50,4 +50,13 @@ statusHandler.setFormatter(loggingFormat)
 statusHandler.addFilter(loggingFilter)
 logger.addHandler(statusHandler)
 
+#Add confirmation box on closing
+def close_application():
+    close = tkinter.messagebox.askokcancel("Quit", "Are you sure you want to quit?")
+    if close:
+        root.destroy()
+
+root.protocol("WM_DELETE_WINDOW", close_application)
+window2.protocol("WM_DELETE_WINDOW", close_application)
+
 root.mainloop()
