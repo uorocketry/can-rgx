@@ -3,12 +3,14 @@ import logging
 from datetime import datetime
 import tkinter as tk
 import tkinter.messagebox
+import threading
 
 from shared.customlogging.handler import MakeFileHandler
 from shared.customlogging.filter import SensorFilter
 import laptop.gui.logginggui as logginggui
 import laptop.gui.controlgui as controlgui
 import laptop.gui.statusframe as statusframe
+from laptop.network.loggingreceiver import logging_receive_forever
 
 #Setting up logging to console and file
 
@@ -49,6 +51,11 @@ statusHandler = statusframe.StatusHandler(controlGUI.status)
 statusHandler.setFormatter(loggingFormat)
 statusHandler.addFilter(loggingFilter)
 logger.addHandler(statusHandler)
+
+#Start the log receiver
+t = threading.Thread(target=logging_receive_forever)
+t.setDaemon(True)
+t.start()
 
 #Add confirmation box on closing
 def close_application():

@@ -1,5 +1,5 @@
 import sys
-import logging
+import logging, logging.handlers
 from datetime import datetime
 
 from shared.customlogging.handler import MakeFileHandler
@@ -27,6 +27,9 @@ fileHandler.setFormatter(loggingFormat)
 fileHandler.addFilter(loggingFilter)
 logger.addHandler(fileHandler)
 
+#Send logs to laptop
+socketHandler = logging.handlers.SocketHandler('127.0.0.1', logging.handlers.DEFAULT_TCP_LOGGING_PORT)
+logger.addHandler(socketHandler)
  
 start_sensors()
 
