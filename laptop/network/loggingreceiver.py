@@ -82,7 +82,7 @@ class LogRecordStreamHandler(socketserver.StreamRequestHandler):
 
                 record = logging.makeLogRecord(obj)
                 self.handle_record(record)
-            except NetworkError:
+            except (NetworkError, ConnectionResetError):
                 logger.warning("Network error. Did the client close the connection?")
                 connected = False
             except:
