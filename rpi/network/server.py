@@ -62,13 +62,13 @@ class RequestHandler(socketserver.StreamRequestHandler):
 
             self.send_data("OK".encode("utf-8"))
         except NetworkReadingTimeoutError:
-            logger.error("Error while reading from client: Timed out while reading from client")
+            logger.error("Timed out while reading from client")
         except NetworkWritingTimeoutError:
-            logger.error("Error while reading from client: Timed out while writing to client")
+            logger.error("Timed out while writing to client")
         except NetworkError:
-            logger.error("Error while reading from client: Is the message in the correct format?")
+            logger.error("Error while reading from client. Is the message in the correct format?")
         except:
-            logger.exception("Major error while processing message from client")
+            logger.exception("Major error while handling client connection")
         else:
             process_message(body, self.client_address)
 
