@@ -18,7 +18,7 @@ class SensorLogging(ABC):
 
         self.sensorlogger = logging.getLogger("sensorlog."+folderName)
 
-        csvHandler = MakeFileHandler("logs/sensor/"+folderName+"/"+datetime.now().strftime("{}_%Y-%m-%d %H-%M-%S.csv".format(folderName)))
+        csvHandler = MakeFileHandler('rpi', 'sensor', folderName, 'csv')
         csvHandler.setFormatter(CSVFormatter())
         self.sensorlogger.addHandler(csvHandler)
         self.sensorlogger.setLevel(logging.INFO)

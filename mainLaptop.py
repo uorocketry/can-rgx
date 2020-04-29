@@ -28,7 +28,7 @@ consoleHandler.addFilter(loggingFilter)
 logger.addHandler(consoleHandler)
 
 #Logging to file. A new file is created each run, with the name being the current date and time
-fileHandler = MakeFileHandler("logs/laptop/"+datetime.now().strftime("laptop_%Y-%m-%d %H-%M-%S.log"))
+fileHandler = MakeFileHandler('laptop', 'main')
 fileHandler.setFormatter(loggingFormat)
 fileHandler.addFilter(loggingFilter)
 logger.addHandler(fileHandler)

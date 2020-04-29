@@ -22,7 +22,7 @@ consoleHandler.addFilter(loggingFilter)
 logger.addHandler(consoleHandler)
 
 #Logging to file. A new file is created each run, with the name being the current date and time
-fileHandler = MakeFileHandler("logs/main/"+datetime.now().strftime("log_%Y-%m-%d %H-%M-%S.log"))
+fileHandler = MakeFileHandler('rpi', 'main')
 fileHandler.setFormatter(loggingFormat)
 fileHandler.addFilter(loggingFilter)
 logger.addHandler(fileHandler)
