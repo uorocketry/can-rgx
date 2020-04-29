@@ -8,6 +8,8 @@ import time
 
 from shared.network.requesttypes import RequestTypes
 from laptop.network.client import send_message
+from shared.customlogging.formatter import CSVFormatter
+from shared.customlogging.handler import MakeFileHandler
 
 class NetworkError(Exception):
     pass
@@ -94,7 +96,21 @@ class LogRecordStreamHandler(socketserver.StreamRequestHandler):
 
     def handle_record(self, record):
         logger = logging.getLogger(record.name)
+        if record.name.startswith('sensorlog') and len(logger.handlers) == 0: #Check if we are logging to a sensor and that this sensor has a handler
+            self.create_sensorlog_handler(record.name)
+                
         logger.handle(record)
+
+    def create_sensorlog_handler(self, name):
+        logging.getLogger(__name__).debug(f"Adding handler {name} for sensor logging")
+        self.sensorlogger = logging.getLogger(name)
+
+        splitName = name.split('.')
+
+        csvHandler = MakeFileHandler('laptop', 'sensor', splitName[1], 'csv')
+        csvHandler.setFormatter(CSVFormatter())
+        self.sensorlogger.addHandler(csvHandler)
+        self.sensorlogger.setLevel(logging.INFO)
 
 
 def logging_receive_forever():
