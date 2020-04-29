@@ -19,6 +19,7 @@ class LoggingGUI:
         self.master = master
 
         master.title("Logs")
+        master.geometry("1000x400")
 
         #Configure text area
         self.text = tkst.ScrolledText(master)

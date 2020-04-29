@@ -18,6 +18,7 @@ logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
 loggingFormat = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+loggingFormatConsole = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s', '%H:%M:%S')
 loggingFilter = SensorFilter()
 
 #Logging to console
@@ -37,7 +38,7 @@ root = tk.Tk()
 
 logGUI = logginggui.LoggingGUI(root)
 guiHandler = logginggui.LoggingGUIHandler(logGUI)
-guiHandler.setFormatter(loggingFormat)
+guiHandler.setFormatter(loggingFormatConsole)
 guiHandler.addFilter(loggingFilter)
 logger.addHandler(guiHandler)
 
