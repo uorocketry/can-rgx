@@ -6,6 +6,7 @@ from shared.customlogging.handler import MakeFileHandler
 from shared.customlogging.filter import SensorFilter
 from rpi.sensors.sensorstart import start_sensors
 from rpi.network.server import server_listen_forever
+from rpi.network.bufferedsockethandler import BufferedSocketHandler
 
 #Setting up logging to console and file
 
@@ -27,8 +28,7 @@ fileHandler.setFormatter(loggingFormat)
 fileHandler.addFilter(loggingFilter)
 logger.addHandler(fileHandler)
 
-#Send logs to laptop
-socketHandler = logging.handlers.SocketHandler('127.0.0.1', logging.handlers.DEFAULT_TCP_LOGGING_PORT)
+socketHandler = BufferedSocketHandler('127.0.0.1', logging.handlers.DEFAULT_TCP_LOGGING_PORT)
 logger.addHandler(socketHandler)
  
 start_sensors()

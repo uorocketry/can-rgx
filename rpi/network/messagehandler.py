@@ -2,7 +2,7 @@ import json
 import logging, logging.handlers
 
 from shared.network.requesttypes import RequestTypes
-from rpi.network.loggingsockethandler import LoggingSocketHandler
+from rpi.network.bufferedsockethandler import BufferedSocketHandler
 
 def process_message(json_string, client_adr):
     logger = logging.getLogger(__name__)
