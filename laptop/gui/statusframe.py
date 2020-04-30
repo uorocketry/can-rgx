@@ -1,18 +1,6 @@
 import tkinter as tk
 import logging
 
-class StatusHandler(logging.Handler):
-    def __init__(self, frame):
-        '''
-        frame: StatusFrame to update
-        '''
-        super().__init__()
-
-        self.frame = frame
-
-    def emit(self, record):
-        self.frame.update_status(record.levelno)
-
 class StatusFrame(tk.Frame):
     def __init__(self, parent):
         tk.Frame.__init__(self, parent)
@@ -29,23 +17,52 @@ class StatusFrame(tk.Frame):
         #Make the status fill most of the frame
         self.grid_columnconfigure(0, weight=1)
         self.grid_rowconfigure(0, weight=1)
+
+        #Track which error have been raised so they can be cleared automatically
+        #Each key is a string representing the error ID, and the value is the error level
+        self.errorIDs = dict()
         
-    def update_status(self, status):
-        if self.currentlevel > status:
-            return
+    def update_status(self, record):
+        '''
+        Updates the status display from the record.
+        Returns if the record cleared an existing error.
+        '''
+        level = record.levelno
 
-        self.flash = False
-        if status == logging.WARNING:
-            self.color = "blue"
-            self.flash = True
-        elif status == logging.ERROR:
-            self.color = "red"
-            self.flash = True
+        clearedError = False
+        if level >= logging.WARNING:
+            if not hasattr(record, 'errorID'): #Pass default errorID to error if there is none
+                record.errorID = 'unamed' 
 
-        self.currentlevel = status
-        self.status.config(bg=self.color)
+            #Only update if the level of this record is higher than what is currently registered
+            if record.errorID not in self.errorIDs or (record.errorID in self.errorIDs and level > self.errorIDs[record.errorID]):
+                self.errorIDs[record.errorID] = level 
+        elif hasattr(record, 'errorID'):
+                i = self.errorIDs.pop(record.errorID, None) #If the info message has a errorID, automatically clear the error if there is one
+                clearedError = i is not None
+
+        #Next lines find the error with the highest level in the list
+        highestlevel = logging.INFO
+        highestcolor = 'green'
+        highestflash = False
+        for _, errorLevel in self.errorIDs.items():
+            if errorLevel > highestlevel:
+                highestlevel = errorLevel
+
+                if errorLevel == logging.WARNING:
+                    highestcolor = "blue"
+                elif errorLevel >= logging.ERROR:
+                    highestcolor = "red"
+                    highestflash = True
+
+        self.color = highestcolor
+        self.currentlevel = highestlevel
+        self.status.config(bg=highestcolor)
+        self.flash = highestflash
         if self.flash:
             self.parent.after(500, self.flash_status, 0)
+
+        return clearedError
 
     def flash_status(self, i):
         if not self.flash:
@@ -59,6 +76,7 @@ class StatusFrame(tk.Frame):
         self.parent.after(500, self.flash_status, 1 if i == 0 else 0)
 
     def clear_status(self):
+        self.errorIDs.clear()
         self.currentlevel = logging.INFO
         self.color = "green"
         self.status.config(bg=self.color)

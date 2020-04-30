@@ -33,25 +33,19 @@ fileHandler.setFormatter(loggingFormat)
 fileHandler.addFilter(loggingFilter)
 logger.addHandler(fileHandler)
 
-#Setup Logging for the GUI
+#Seting up of the GUI
 root = tk.Tk()
-
-logGUI = logginggui.LoggingGUI(root)
-guiHandler = logginggui.LoggingGUIHandler(logGUI)
-guiHandler.setFormatter(loggingFormatConsole)
-guiHandler.addFilter(loggingFilter)
-logger.addHandler(guiHandler)
-
 
 #Setup the GUI for controlling the experiment
 window2 = tk.Toplevel(root)
 controlGUI = controlgui.ControlGUI(window2)
 
-#Setup the status display
-statusHandler = statusframe.StatusHandler(controlGUI.status)
-statusHandler.setFormatter(loggingFormat)
-statusHandler.addFilter(loggingFilter)
-logger.addHandler(statusHandler)
+#Setup the logging window
+logGUI = logginggui.LoggingGUI(root)
+guiHandler = logginggui.LoggingGUIHandler(logGUI, controlGUI.status)
+guiHandler.setFormatter(loggingFormatConsole)
+guiHandler.addFilter(loggingFilter)
+logger.addHandler(guiHandler)
 
 #Start the log receiver
 t = threading.Thread(target=logging_receive_forever)

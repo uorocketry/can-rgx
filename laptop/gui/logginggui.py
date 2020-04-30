@@ -3,15 +3,19 @@ import tkinter.scrolledtext as tkst
 import logging
 
 class LoggingGUIHandler(logging.Handler):
-    def __init__(self, loggingGUI):
+    def __init__(self, loggingGUI, statusFrame):
         '''
         loggingGui: instance of LoggingGUI to send messages to 
+        statusFrame: statusFrame to update
         '''
         super().__init__()
         self.gui = loggingGUI
+        self.status = statusFrame
 
     def emit(self, record):
-        self.gui.write_message(self.format(record), record.levelname)
+        clearedError = self.status.update_status(record)
+        self.gui.write_message(self.format(record), record.levelname, clearedError)
+        
 
 
 class LoggingGUI:
@@ -36,13 +40,16 @@ class LoggingGUI:
         master.grid_rowconfigure(1, weight=1)
 
         #Define colors for the various logging levels
+        self.text.tag_config("CLEARERROR", foreground="green")
         self.text.tag_config("DEBUG", foreground="black")
         self.text.tag_config("INFO", foreground="black")
         self.text.tag_config("WARNING", foreground="blue")
         self.text.tag_config("ERROR", foreground="red")
 
 
-    def write_message(self, log, loggingLevel):
+    def write_message(self, log, loggingLevel, clearedError):
+        if clearedError:
+            loggingLevel = "CLEARERROR"
         self.text.config(state=tk.NORMAL)
         self.text.insert(tk.END, log + "\n", loggingLevel)
         if self.keepDown.get() == 1:

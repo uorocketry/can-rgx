@@ -35,9 +35,9 @@ class LogRecordConnector(threading.Thread):
                 break
 
             if timeChecked >= 3:
-                logger.error("RPI is not connecting to the logging server")
+                logger.error("RPI is not connecting to the logging server", extra={'errorID': 'loggingConnection'})
             else:
-                logger.warning("RPI did not connect to the server. Waiting....")
+                logger.warning("RPI did not connect to the server. Waiting....", extra={'errorID': 'loggingConnection'})
 
             timeChecked += 1         
 
@@ -68,7 +68,7 @@ class LogRecordStreamHandler(socketserver.StreamRequestHandler):
     def handle(self):
         global logConnector
         logger = logging.getLogger(__name__)
-        logger.info("Got a connection from {}".format(self.client_address))
+        logger.info("Got a connection from {}".format(self.client_address), extra={'errorID': 'loggingConnection'})
 
         logConnector.stop() #Stop monitoring for connection
 
@@ -85,10 +85,10 @@ class LogRecordStreamHandler(socketserver.StreamRequestHandler):
                 record = logging.makeLogRecord(obj)
                 self.handle_record(record)
             except (NetworkError, ConnectionResetError):
-                logger.warning("Network error. Did the client close the connection?")
+                logger.warning("Network error. Did the client close the connection?", extra={'errorID': 'loggingConnection'})
                 connected = False
             except:
-                logger.exception("Error while receiving log from client")
+                logger.exception("Error while receiving log from client", extra={'errorID': 'loggingConnection'})
                 connected = False
 
         logConnector = LogRecordConnector()
