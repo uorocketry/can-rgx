@@ -105,3 +105,6 @@ venv.bak/
 
 #log files
 logs/
+
+#config file
+config.ini

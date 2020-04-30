@@ -5,6 +5,7 @@ import json
 import select
 
 from rpi.network.messagehandler import process_message
+import shared.config as config
 
 class NetworkError(Exception):
     pass
@@ -81,6 +82,7 @@ def server_listen_forever():
     logger = logging.getLogger(__name__)
     logger.info("Starting server and listening to incoming connections")
 
-    with socketserver.TCPServer(('127.0.0.1', 65432), RequestHandler) as server:
+    RPIConfig = config.get_config('rpi')
+    with socketserver.TCPServer((RPIConfig['rpi_listening_ip'], RPIConfig.getint('rpi_port')), RequestHandler) as server:
         server.serve_forever()
 
