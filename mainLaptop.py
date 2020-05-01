@@ -11,6 +11,7 @@ import laptop.gui.logginggui as logginggui
 import laptop.gui.controlgui as controlgui
 import laptop.gui.statusframe as statusframe
 from laptop.network.loggingreceiver import logging_receive_forever
+from laptop.network.pingchecker import PingChecker
 
 #Setting up logging to console and file
 
@@ -51,6 +52,9 @@ logger.addHandler(guiHandler)
 t = threading.Thread(target=logging_receive_forever)
 t.setDaemon(True)
 t.start()
+
+#Start the ping daemon
+PingChecker().start()
 
 #Add confirmation box on closing
 def close_application():
