@@ -3,12 +3,15 @@ import logging
 from datetime import datetime
 import tkinter as tk
 import tkinter.messagebox
+import threading
 
 from shared.customlogging.handler import MakeFileHandler
 from shared.customlogging.filter import SensorFilter
 import laptop.gui.logginggui as logginggui
 import laptop.gui.controlgui as controlgui
 import laptop.gui.statusframe as statusframe
+from laptop.network.loggingreceiver import logging_receive_forever
+from laptop.network.pingchecker import PingChecker
 
 #Setting up logging to console and file
 
@@ -16,6 +19,7 @@ logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
 loggingFormat = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+loggingFormatConsole = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s', '%H:%M:%S')
 loggingFilter = SensorFilter()
 
 #Logging to console
@@ -25,30 +29,32 @@ consoleHandler.addFilter(loggingFilter)
 logger.addHandler(consoleHandler)
 
 #Logging to file. A new file is created each run, with the name being the current date and time
-fileHandler = MakeFileHandler("logs/laptop/"+datetime.now().strftime("laptop_%Y-%m-%d %H-%M-%S.log"))
+fileHandler = MakeFileHandler('laptop', 'main')
 fileHandler.setFormatter(loggingFormat)
 fileHandler.addFilter(loggingFilter)
 logger.addHandler(fileHandler)
 
-#Setup Logging for the GUI
+#Seting up of the GUI
 root = tk.Tk()
-
-logGUI = logginggui.LoggingGUI(root)
-guiHandler = logginggui.LoggingGUIHandler(logGUI)
-guiHandler.setFormatter(loggingFormat)
-guiHandler.addFilter(loggingFilter)
-logger.addHandler(guiHandler)
-
 
 #Setup the GUI for controlling the experiment
 window2 = tk.Toplevel(root)
 controlGUI = controlgui.ControlGUI(window2)
 
-#Setup the status display
-statusHandler = statusframe.StatusHandler(controlGUI.status)
-statusHandler.setFormatter(loggingFormat)
-statusHandler.addFilter(loggingFilter)
-logger.addHandler(statusHandler)
+#Setup the logging window
+logGUI = logginggui.LoggingGUI(root)
+guiHandler = logginggui.LoggingGUIHandler(logGUI, controlGUI.status)
+guiHandler.setFormatter(loggingFormatConsole)
+guiHandler.addFilter(loggingFilter)
+logger.addHandler(guiHandler)
+
+#Start the log receiver
+t = threading.Thread(target=logging_receive_forever)
+t.setDaemon(True)
+t.start()
+
+#Start the ping daemon
+PingChecker().start()
 
 #Add confirmation box on closing
 def close_application():
