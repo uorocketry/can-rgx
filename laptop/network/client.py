@@ -4,7 +4,10 @@ import json
 import select
 import logging
 
-serverIp = ("127.0.0.1", 65432)
+import shared.config as config
+
+LaptopConfig = config.get_config('laptop')
+serverIp = (LaptopConfig['rpi_ip'], LaptopConfig.getint('rpi_port'))
 
 class NetworkError(Exception):
     pass

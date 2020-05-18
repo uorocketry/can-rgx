@@ -16,6 +16,7 @@ def update_config():
                          'laptop_ip': '127.0.0.1'}
     
     default['laptop'] = {
+                         'laptop_listening_ip': '127.0.0.1',
                          'rpi_ip': '127.0.0.1'}
 
 

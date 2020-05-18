@@ -10,6 +10,7 @@ from shared.network.requesttypes import RequestTypes
 from laptop.network.client import send_message
 from shared.customlogging.formatter import CSVFormatter
 from shared.customlogging.handler import MakeFileHandler
+import shared.config as config
 
 class NetworkError(Exception):
     pass
@@ -114,7 +115,8 @@ class LogRecordStreamHandler(socketserver.StreamRequestHandler):
 
 
 def logging_receive_forever():
-    with socketserver.TCPServer(('127.0.0.1', logging.handlers.DEFAULT_TCP_LOGGING_PORT), LogRecordStreamHandler) as server:
+    LaptopConfig = config.get_config('laptop')
+    with socketserver.TCPServer((LaptopConfig['laptop_listening_ip'], logging.handlers.DEFAULT_TCP_LOGGING_PORT), LogRecordStreamHandler) as server:
         logConnector.start() #Monitor for connection and send alert to user if necessary
         server.serve_forever()
 
