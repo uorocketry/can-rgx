@@ -77,6 +77,14 @@ FUND_FREQ = 0x7A
 FLASH_CNT_L = 0x7C
 FLASH_CNT_U = 0x7E
 
+class FFTRecord:
+    def __init__(self, lowestfrequency, binsize, axis, data):
+        self.lowestfrequency = lowestfrequency
+        self.binsize = binsize
+        self.axis = axis
+        self.data = data # This is in mg
+
+
 #If using Pylint in IDE, for some reason warns about GPIO not
 #having any members. The following line tells it to ignore this.
 # pylint: disable=no-member
@@ -168,6 +176,40 @@ class Vibration(SensorLogging):
 
         rcv = self.spi.readbytes(2)
         return (rcv[0] << 8) | rcv[1]
+
+    def read_fft_data(self):
+        '''
+        Reads from sensor the FFT data and return as a list of FFTRecord
+        '''
+        self.wait_for_sensor()
+        
+        #Data returned is an array, so combine both elements to get the real number
+        combineData = lambda data : (data[0] << 8) | data[1]
+        
+        #Get the correct value from the data received. This will be in mg
+        getValue = lambda data : (2**(combineData(data)/2048)/FFTAverages) * 0.9535
+
+        data = list()
+        
+        samplerate = 220000/2**AVG_CNT_Bit
+        binsize = samplerate/4096
+
+        axis = [X_BUF, Y_BUF, Z_BUF]
+        axisName = ['x', 'y', 'z']
+
+        self.spi.xfer2([axis[0] & ~(1 << 7), 0x00])
+        for n, a in enumerate(axis):
+            for i in range(2048):
+                if i != 2047:
+                    rcv = self.spi.xfer2([a & ~(1 << 7), 0x00]) #Remember that any data requested will only arrive at the next spi transaction
+                elif n < 2:
+                    rcv = self.spi.xfer2([axis[n+1] & ~(1 << 7), 0x00]) #Request right away for the next axis
+                else:
+                    rcv = self.spi.xfer2([0x00, 0x00]) #If we are at the very end, don't request anything
+
+                data.append(FFTRecord(binsize*i, binsize, axisName[n], getValue(rcv)))
+        
+        return data
 
     def logging_loop(self):
         pass
