@@ -1,6 +1,7 @@
 import logging
 import spidev
 import RPi.GPIO as GPIO
+import time
 
 from rpi.sensors.sensorlogging import SensorLogging
 
@@ -94,6 +95,8 @@ class Vibration(SensorLogging):
     '''
 
     def __init__(self):
+        super().__init__("vibration", ["axis", "lowestfrequency (Hz)", "binsize (Hz)", "value (mg)"])
+
         self.spi = spidev.SpiDev()
         self.spi.open(SPIBus, SPIDevice)
 
@@ -212,4 +215,11 @@ class Vibration(SensorLogging):
         return data
 
     def logging_loop(self):
-        pass
+        while True:
+            self.write_to_register(GLOB_CMD, 1<<11) #Start a measurement
+            self.wait_for_sensor()
+
+            data = self.read_fft_data()
+            now = time.time()*1000
+            for i in data:
+                self.sensorlogger.info([now, i.axis, i.lowestfrequency, i.binsize, i.data])
