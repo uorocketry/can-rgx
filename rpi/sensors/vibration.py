@@ -1,6 +1,6 @@
 import logging
 import spidev
-import RPi.GPIO as GPIO 
+import RPi.GPIO as GPIO
 
 from rpi.sensors.sensorlogging import SensorLogging
 
@@ -9,6 +9,14 @@ SPIBus = 0
 #Chip select. Either 0 or 1
 SPIDevice = 0
 
+#Sample rate to use. See table 20 in datasheet for details. Note: Table 80 has an error.
+#Sample Rate = 220000 / 2^(AVG_CNT_Bit)
+AVG_CNT_Bit = 0
+
+#Number of FFT averages to do
+FFTAverages = 1
+
+#Pin connected to the BUSY output
 BUSYPin = 24
 
 #Registers from the sensor
@@ -90,13 +98,35 @@ class Vibration(SensorLogging):
         GPIO.setmode(GPIO.BCM)
         GPIO.setwarnings(False)
 
-        #Important, remove the pull-up!!!!!!!!!!!!!!!!!!!!!1
-        GPIO.setup(BUSYPin, GPIO.IN, pull_up_down=GPIO.PUD_UP)
-        
-    
+        GPIO.setup(BUSYPin, GPIO.IN)
+
+        self.write_to_register(PAGE_ID, 0x0000)
+
+        if self.read_from_register(PROD_ID) != 0x0BCD:
+            raise RuntimeError("Sensor PROD_ID is not the expected value. Is the correct sensor plugged?")
+
+        #Set Window settings to Hanning, use SR0, record mode to MFFT
+        self.write_to_register(REC_CTRL, 0x1100)
+
+        #Set sample rate. We only use SR0, and don't care about the rest
+        self.write_to_register(AVG_CNT, AVG_CNT_Bit)
+
+        #Spectral averaging. Again, only care about SR0
+        self.write_to_register(FFT_AVG1, FFTAverages)
+
+        #Keep track of raised errors
+        self.errors = set()
+
     def __del__(self):
         self.spi.close()
         GPIO.cleanup(BUSYPin)
+
+    def wait_for_sensor(self):
+        '''
+        Blocks until sensor is ready
+        '''
+        while not GPIO.input(BUSYPin):
+            pass
 
     def write_to_register(self, address, data):
         '''
@@ -109,9 +139,7 @@ class Vibration(SensorLogging):
         data: int
             16 bit of data to write
         '''
-        #Wait for sensor to be ready
-        while not GPIO.input(BUSYPin):
-            pass
+        self.wait_for_sensor()
 
         #Send message in two parts, each containing 16 bits.
         #First bit is 1 for the write bit, followed by the 7 bit address
@@ -133,9 +161,7 @@ class Vibration(SensorLogging):
         int
             16 bit number of the data returned
         '''
-        #Wait for sensor to be ready
-        while not GPIO.input(BUSYPin):
-            pass
+        self.wait_for_sensor()
 
         #Send the address to read from, and make sure the write bit is set to 0
         self.spi.xfer2([address & ~(1 << 7), 0x00])
