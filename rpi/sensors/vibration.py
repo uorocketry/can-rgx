@@ -139,6 +139,32 @@ class Vibration(SensorLogging):
         while not GPIO.input(BUSYPin):
             pass
 
+    def __check_err_bit(self, stat, bit, message):
+        if ((stat >> bit) & 0b1) and bit not in self.errors:
+            logger = logging.getLogger(__name__)
+            self.errors.add(bit)
+            logger.warning("Error on sensor: " + message, extra={'errorID': f'VibrationBit{bit}'})
+        elif not ((stat >> bit) & 0b1) and bit in self.errors:
+            logger = logging.getLogger(__name__)
+            self.errors.remove(bit)
+            logger.info("Error cleared: " + message, extra={'errorID': f'VibrationBit{bit}'})
+    
+    def check_for_errors(self):
+        '''
+        Check for errors and logs it if it is found.
+        '''
+        self.wait_for_sensor()
+
+        stat = self.read_from_register(DIAG_STAT)
+
+        self.__check_err_bit(stat, 6, "Flash test result, checksum flag")
+        self.__check_err_bit(stat, 5, "Self test diagnostic error flag.")
+        self.__check_err_bit(stat, 4, "Recording escape flag.")
+        self.__check_err_bit(stat, 3, "Self test diagnostic error flag.")
+        self.__check_err_bit(stat, 2, "SPI communication failure (SCLKs ≠ even multiple of 16).")
+        self.__check_err_bit(stat, 1, "Power supply > 3.625 V.")
+        self.__check_err_bit(stat, 0, "Power supply < 2.975 V.")
+
     def write_to_register(self, address, data):
         '''
         Write to the specified 16 bit wide register.
@@ -216,6 +242,8 @@ class Vibration(SensorLogging):
 
     def logging_loop(self):
         while True:
+            self.check_for_errors()
+
             self.write_to_register(GLOB_CMD, 1<<11) #Start a measurement
             self.wait_for_sensor()
 
