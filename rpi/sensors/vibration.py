@@ -113,8 +113,8 @@ class Vibration(SensorLogging):
 
         self.write_to_register(PAGE_ID, 0x0000)
 
-        if self.read_from_register(PROD_ID) != 0x0BCD:
-            raise RuntimeError("Sensor PROD_ID is not the expected value. Is the correct sensor plugged?")
+        #Check if the sensor is connected, blocking here until it is
+        self.check_sensor_connection(True)
 
         #Set Window settings to Hanning, use SR0, record mode to MFFT
         self.write_to_register(REC_CTRL, 0x1100)
@@ -138,6 +138,35 @@ class Vibration(SensorLogging):
         '''
         while not GPIO.input(BUSYPin):
             pass
+
+    def __check_sensor(self, check):
+        if check != 0x0BCD and "PROD_ID_Error" not in self.errors:
+            logger = logging.getLogger(__name__)
+            logger.error(f"PROD_ID is not the expected value: got {check} instead of 0x0BCD. Is the sensor plugged?" \
+                , extra={'errorID': f'VibrationPROD_ID'})
+            self.errors.add("PROD_ID_Error")
+        elif check == 0x0BCD and "PROD_ID_Error" in self.errors:
+            logger = logging.getLogger(__name__)
+            logger.info(f"Error cleared, PROD_ID is now the expected value." \
+                , extra={'errorID': f'VibrationPROD_ID'})
+            self.errors.remove("PROD_ID_Error")
+
+    def check_sensor_connection(self, block):
+        '''
+        Checks if the correct sensor is connected, or if anything is connected
+        at all by checking PROD_ID and comparing it to the expected value.
+
+        If the returned value is not what is expected, an error will be logged.
+        If block is True, this function will block until the correct value is returned.
+        '''
+
+        check = self.read_from_register(PROD_ID)
+
+        self.__check_sensor(check)
+
+        while block and check != 0x0BCD:
+            check = self.read_from_register(PROD_ID)
+            self.__check_sensor(check)
 
     def __check_err_bit(self, stat, bit, message):
         if ((stat >> bit) & 0b1) and bit not in self.errors:
@@ -242,6 +271,7 @@ class Vibration(SensorLogging):
 
     def logging_loop(self):
         while True:
+            self.check_sensor_connection(True)
             self.check_for_errors()
 
             self.write_to_register(GLOB_CMD, 1<<11) #Start a measurement
