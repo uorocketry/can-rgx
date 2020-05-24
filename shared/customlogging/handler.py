@@ -1,6 +1,8 @@
 import logging
 import os
 from datetime import datetime
+import logging.handlers
+import copy
 
 
 class MakeFileHandler(logging.FileHandler):
@@ -23,3 +25,23 @@ class MakeFileHandler(logging.FileHandler):
 
         os.makedirs(os.path.dirname(path), exist_ok=True)
         logging.FileHandler.__init__(self, path, mode, encoding, delay)
+
+class CustomQueueHandler(logging.handlers.QueueHandler):
+    '''
+    Overrides the prepare method of QueueHandler to prevent all
+    messages from being converted to strings
+    '''
+    def __init__(self, queue):
+        super().__init__(queue)
+
+    def prepare(self, record):
+        '''
+        Folowing is copied from the CPython implementation,
+        but a line has been changed to prevent the message from
+        being converted to a string.
+        '''
+        # bpo-35726: make copy of record to avoid affecting other handlers in the chain.
+        record = copy.copy(record)
+        record.exc_info = None
+        record.exc_text = None
+        return record
