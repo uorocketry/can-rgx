@@ -8,7 +8,7 @@ import struct
 
 from rpi.sensors.sensorlogging import SensorLogging
 
-class Pressure:
+class Pressure(SensorLogging):
     bus = smbus.SMBus(1)
     device_ID = 0xBB          #device_id
     address = 0b1011100        #slave address of device
@@ -21,16 +21,8 @@ class Pressure:
     PRESS_OUT_H = 0x2A      #higher part of reference pressure (bits 16-23)
 
 
-    def __init__(self, identity, sensorlogger):
-        self.device_file = '/sys/bus/i2c/devices' + identity + '/i2c_slave1'
-        self.sensorlogger = sensorlogger
-        self.logger = logging.getLogger (__name__)
-
-        if identity == Pressure.address:
-            self.name = 'MEX-1031'
-        else:
-            self.logger.warning("Pressure sensor with address {} is not recognized.".format(identity))
-            self.name = 'UNDEFINED'
+    def __init___(self):
+        super().__init__("pressure", ["value"])
 
     def initialize_pressure(self):
         bus.write_byte_data (self.address, self.CTRL_REG0, 0b00000010)
@@ -66,30 +58,12 @@ class Pressure:
         inErrorState = False
         while True:
             try:
-                self.sensorlogger.info([time.time()*1000, self.name, self.read()])
+                self.sensorlogger.info([time.time()*1000, self.read_pressure()])
 
                 if inErrorState:
                     inErrorState = False
-                    self.logger.warning("Error has been cleared for {}".format(self.name))
+                    self.logger.warning("Error has been cleared for pressure sensor."))
             except OSError:
                 if not inErrorState:
-                    self.logger.exeption("Error while reading from {}".format(self.name))
+                    self.logger.exception("Error while reading from pressure sensor."))
                     inErrorState = True
-
-
-class PressList(SensorLogging):
-    def __init__ (self):
-        super().__init__("pressure", ["value"])
-
-    self.logger = logging.getLogger(__name__)
-
-    while True:
-        p = Pressure.read_pressure(address, self.sensorlogger)
-        self.logger.debug("S")
-
-    def logging_loop(self):
-        for i in self.sensor_list:
-            self.logger.debug("Starting {}".format(i.name))
-            t = threading.Thread(target = i.logging_loop)
-            t.daemon = True
-            t.start()
