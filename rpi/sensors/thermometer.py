@@ -76,7 +76,7 @@ class ThermoList(SensorLogging):
         if len(Thermo.names) != len(self.sensor_list):
             self.logger.warning("Not all known thermometers have been found")
 
-    def logging_loop(self):
+    def run(self):
         for i in self.sensor_list:
             self.logger.debug("Starting {}".format(i.name))
             t = threading.Thread(target = i.logging_loop)

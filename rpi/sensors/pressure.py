@@ -54,7 +54,7 @@ class Pressure(SensorLogging):
         return(pressure)
 
 #what is this doing
-    def logging_loop(self):
+    def run(self):
         inErrorState = False
         while True:
             try:

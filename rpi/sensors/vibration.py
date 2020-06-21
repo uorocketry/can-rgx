@@ -269,7 +269,7 @@ class Vibration(SensorLogging):
         
         return data
 
-    def logging_loop(self):
+    def run(self):
         while True:
             self.check_sensor_connection(True)
             self.check_for_errors()
