@@ -1,13 +1,12 @@
-import logging, logging.handlers
-from datetime import datetime
 import multiprocessing
+import logging
 
-
-from rpi.logging.listener import logging_config
 from rpi.logging.listener import LoggingListener
-from rpi.sensors.sensorstart import start_sensors
-from rpi.network.server import server_listen_forever
+from rpi.network.server import Server
 from shared.customlogging.handler import CustomQueueHandler
+from rpi.sensors.thermometer import ThermoList
+from rpi.sensors.vibration import Vibration
+from rpi.sensors.pressure import Pressure
 
 if __name__ == '__main__':
     queue = multiprocessing.Queue(-1) #Central queue for the logs
@@ -19,7 +18,20 @@ if __name__ == '__main__':
     root = logging.getLogger()
     root.addHandler(h)
     root.setLevel(logging.INFO)
-    
-    start_sensors()
 
-    server_listen_forever()
+    #Next lines starts all of the other processes and monitor them in case they quit  
+    processClassesList = [Server, Vibration, ThermoList, Pressure]
+    processes = dict()
+
+    for processClass in processClassesList:
+        p = processClass()
+        p.start()
+        processes[processClass] = p
+
+    while True:
+        for processClass, process in processes.items():
+            if not process.is_alive():
+                root.error('The process for {} exited! Restarting it...'.format(processClass.__name__))
+                p = processClass()
+                p.start()
+                processes[processClass] = p

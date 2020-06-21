@@ -3,6 +3,7 @@ import struct
 import logging
 import json
 import select
+import multiprocessing
 
 from rpi.network.messagehandler import process_message
 import shared.config as config
@@ -73,16 +74,15 @@ class RequestHandler(socketserver.StreamRequestHandler):
         else:
             process_message(body, self.client_address)
 
+class Server(multiprocessing.Process):
+    def run(self):
+        '''
+        Starts a server to listen and handle incoming requests. This will run until the heat 
+        death of the universe, or until the program is interrupted, whichever comes first.
+        '''
+        logger = logging.getLogger(__name__)
+        logger.info("Starting server and listening to incoming connections")
 
-def server_listen_forever():
-    '''
-    Starts a server to listen and handle incoming requests. This will run until the heat 
-    death of the universe, or until the program is interrupted, whichever comes first.
-    '''
-    logger = logging.getLogger(__name__)
-    logger.info("Starting server and listening to incoming connections")
-
-    RPIConfig = config.get_config('rpi')
-    with socketserver.TCPServer((RPIConfig['rpi_listening_ip'], RPIConfig.getint('rpi_port')), RequestHandler) as server:
-        server.serve_forever()
-
+        RPIConfig = config.get_config('rpi')
+        with socketserver.TCPServer((RPIConfig['rpi_listening_ip'], RPIConfig.getint('rpi_port')), RequestHandler) as server:
+            server.serve_forever()

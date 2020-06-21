@@ -83,3 +83,6 @@ class ThermoList(SensorLogging):
             t = threading.Thread(target = i.logging_loop)
             t.daemon = True
             t.start()
+
+        while True:
+            pass
