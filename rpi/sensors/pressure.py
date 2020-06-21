@@ -21,9 +21,6 @@ class Pressure(SensorLogging):
     PRESS_OUT_H = 0x2A      #higher part of reference pressure (bits 16-23)
 
 
-    def __init___(self):
-        super().__init__("pressure", ["value"])
-
     def initialize_pressure(self):
         bus.write_byte_data (self.address, self.CTRL_REG0, 0b00000010)
         time.sleep(0.5)
@@ -55,6 +52,7 @@ class Pressure(SensorLogging):
 
 #what is this doing
     def run(self):
+        super().setup_logging("pressure", ["value"])
         inErrorState = False
         while True:
             try:

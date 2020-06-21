@@ -93,10 +93,7 @@ class Vibration(SensorLogging):
     '''
     Class which interacts with an ADcmXL3021 vibration sensor.
     '''
-
-    def __init__(self):
-        super().__init__("vibration", ["axis", "lowestfrequency (Hz)", "binsize (Hz)", "value (mg)"])
-
+    def setup(self):
         #Keep track of raised errors
         self.errors = set()
 
@@ -127,10 +124,6 @@ class Vibration(SensorLogging):
 
         #Spectral averaging. Again, only care about SR0
         self.write_to_register(FFT_AVG1, FFTAverages)
-
-    def __del__(self):
-        self.spi.close()
-        GPIO.cleanup(BUSYPin)
 
     def wait_for_sensor(self):
         '''
@@ -270,6 +263,8 @@ class Vibration(SensorLogging):
         return data
 
     def run(self):
+        super().setup_logging("vibration", ["axis", "lowestfrequency (Hz)", "binsize (Hz)", "value (mg)"])
+        self.setup()
         while True:
             self.check_sensor_connection(True)
             self.check_for_errors()
