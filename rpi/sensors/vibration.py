@@ -142,7 +142,7 @@ class Vibration(SensorLogging):
     def __check_sensor(self, check):
         if check != 0x0BCD and "PROD_ID_Error" not in self.errors:
             logger = logging.getLogger(__name__)
-            logger.error(f"PROD_ID is not the expected value: got {check} instead of 0x0BCD. Is the sensor plugged?" \
+            logger.error(f"PROD_ID is not the expected value: got {hex(check)} instead of 0x0BCD. Is the sensor plugged?" \
                 , extra={'errorID': f'VibrationPROD_ID'})
             self.errors.add("PROD_ID_Error")
         elif check == 0x0BCD and "PROD_ID_Error" in self.errors:
