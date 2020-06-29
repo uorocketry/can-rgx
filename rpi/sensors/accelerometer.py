@@ -63,7 +63,6 @@ class Accelerometer:
         """
         device_address = address << 1 | WRITE_BIT    #sets LSB to 0
         self.spi.xfer2([device_address, value])
-        print("written.\n")
 
     def read_data(self, address):
         """Reads data from device.
@@ -137,11 +136,8 @@ class Accelerometer:
         )
 
         x_data = raw_data[0:2]
-        print(x_data)
         y_data = raw_data[2:4]
-        print(y_data)
         z_data = raw_data[4:6]
-        print(z_data)
 
 
         # Combine data
@@ -175,7 +171,7 @@ def main():
     while True:
       val = adxl.get_axes()
       print(val)
-      time.sleep(5)
+      time.sleep(1)
 
 if __name__ == "__main__": 
     main()
