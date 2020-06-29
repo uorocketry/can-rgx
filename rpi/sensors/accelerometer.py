@@ -32,6 +32,13 @@ DUMMY_BYTE = 0x00
 MEASURE_MODE = 0b00001000 
 OUTPUT_RATE = 0b00001111
 
+#Conversion factor
+CONV_FULLR = 3.9
+CONV_2G_10B = 3.9   #mg/LSB
+CONV_4G_10B = 7.8
+CONV_8G_10B = 15.6
+CONV_16G_10B = 31.2
+
 class Accelerometer:
     def __init__(self, measure_range=RANGE_2G):
         # SPI init
@@ -79,13 +86,13 @@ class Accelerometer:
         """
         cat_add = []   #list address instrucs
         for address in address_list:
-            cat_add.append(address << 1 | READ_BIT)
+            cat_add.append(address << 1 | READ_BIT)   #sets LSB to 1
         cat_add.append(DUMMY_BYTE)
 
-        self.spi.xfer2(cat_add)[1:]
+        ret = self.spi.xfer2(cat_add)[1:]
         
         #this line doesn't seem to be working, data is updated in cat_add
-        #read_data = self.spi.readbytes(6)
+        read_data = self.spi.readbytes(6)
 
         return cat_add
 
@@ -152,13 +159,14 @@ class Accelerometer:
         if z_data & 0x80000 == 0x80000:
             z_data = ~z_data + 1
 
+        ret = [x_data, y_data, z_data]
 
+        #Convert from LSB/mg to g
+        for i in range(len(ret)):
+            ret[i] = (ret[i]*CONV_2G_10B)/1000
 
         # Return values
-        retval = [x_data, y_data, z_data]
-        return (retval)
-
-        #Convert to readable values
+        return (ret)
 
 
 
