@@ -1,9 +1,10 @@
-import threading
 import logging
+import threading
 import time
 
 from laptop.network.client import send_message
 from shared.network.requesttypes import RequestTypes
+
 
 class PingChecker(threading.Thread):
     '''
@@ -11,6 +12,7 @@ class PingChecker(threading.Thread):
     for some reasons, alert the user. The goal is to catch network problems
     as soon as possible.
     '''
+
     def __init__(self):
         super().__init__()
 
@@ -31,13 +33,12 @@ class PingChecker(threading.Thread):
                 tryCount = 10
             elif not confirm:
                 inError = True
-                if tryCount >= 5: #Try not to spam the user if there is an error
+                if tryCount >= 5:  # Try not to spam the user if there is an error
                     logger.warning("Error while sending ping to RPI", extra={'errorID': 'RPIPing'})
                     tryCount = -1
-                
+
                 tryCount += 1
 
-            
             if not inError:
                 time.sleep(10)
             else:

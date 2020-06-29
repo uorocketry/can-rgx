@@ -1,20 +1,23 @@
+import logging
+import select
 import socketserver
 import struct
-import logging
-import json
-import select
 
-from rpi.network.messagehandler import process_message
 import shared.config as config
+from rpi.network.messagehandler import process_message
+
 
 class NetworkError(Exception):
     pass
 
+
 class NetworkReadingTimeoutError(Exception):
     pass
 
+
 class NetworkWritingTimeoutError(Exception):
     pass
+
 
 class RequestHandler(socketserver.StreamRequestHandler):
     '''
@@ -29,21 +32,23 @@ class RequestHandler(socketserver.StreamRequestHandler):
         buf = b""
 
         while len(buf) != size:
-            read, _, _ = select.select([self.request], [], [], 1) #Make sure we can read from client. If not, we wait up to 1 sec before timing out
+            read, _, _ = select.select([self.request], [], [],
+                                       1)  # Make sure we can read from client. If not, we wait up to 1 sec before timing out
 
             if len(read) == 0:
                 raise NetworkReadingTimeoutError()
 
-            data = read[0].recv(size-len(buf))
+            data = read[0].recv(size - len(buf))
             if not data:
                 raise NetworkError()
-        
+
             buf += data
 
         return buf
 
     def send_data(self, data):
-        _, write, _ = select.select([], [self.request], [], 1) #Make sure we can write to client. If not, we wait up to 1 sec before timing out
+        _, write, _ = select.select([], [self.request], [],
+                                    1)  # Make sure we can write to client. If not, we wait up to 1 sec before timing out
 
         if len(write) == 0:
             raise NetworkWritingTimeoutError()
@@ -83,6 +88,6 @@ def server_listen_forever():
     logger.info("Starting server and listening to incoming connections")
 
     RPIConfig = config.get_config('rpi')
-    with socketserver.TCPServer((RPIConfig['rpi_listening_ip'], RPIConfig.getint('rpi_port')), RequestHandler) as server:
+    with socketserver.TCPServer((RPIConfig['rpi_listening_ip'], RPIConfig.getint('rpi_port')),
+                                RequestHandler) as server:
         server.serve_forever()
-

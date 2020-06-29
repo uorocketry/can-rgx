@@ -3,6 +3,7 @@ import pickle
 import struct
 from collections import deque
 
+
 class BufferedSocketHandler(logging.handlers.SocketHandler):
     def __init__(self, host, port):
         super().__init__(host, port)
@@ -22,10 +23,9 @@ class BufferedSocketHandler(logging.handlers.SocketHandler):
 
             super().emit(nextRecord)
 
-            if self.sock is None: #If we failed to send the record
+            if self.sock is None:  # If we failed to send the record
                 self.buffer.appendleft(nextRecord)
                 break
-
 
     def makePickle(self, record):
         """
@@ -40,7 +40,7 @@ class BufferedSocketHandler(logging.handlers.SocketHandler):
         # available on the receiving end. So we convert the msg % args
         # to a string, save it as msg and zap the args.
         d = dict(record.__dict__)
-        d['msg'] = record.msg #This line has been changed
+        d['msg'] = record.msg  # This line has been changed
         d['args'] = None
         d['exc_info'] = None
         # Issue #25685: delete 'message' if present: redundant with 'msg'

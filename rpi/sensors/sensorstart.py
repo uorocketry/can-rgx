@@ -1,11 +1,10 @@
-import threading
 import logging
-import time
-from multiprocessing import Process
+import threading
 
-from rpi.sensors.thermometer import ThermoList
 from rpi.sensors.pressure import Pressure
+from rpi.sensors.thermometer import ThermoList
 from rpi.sensors.vibration import Vibration
+
 
 def start_sensors():
     sensorList = [ThermoList(), Pressure(), Vibration()]

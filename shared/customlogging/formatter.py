@@ -1,11 +1,13 @@
-import logging
 import csv
 import io
+import logging
+
 
 class CSVFormatter(logging.Formatter):
     '''
     Formats logging messages in csv format
     '''
+
     def __init__(self):
         super().__init__()
         self.output = io.StringIO()
