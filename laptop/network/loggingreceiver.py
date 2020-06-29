@@ -102,16 +102,17 @@ class LogRecordStreamHandler(socketserver.StreamRequestHandler):
                 
         logger.handle(record)
 
-    def create_sensorlog_handler(self, name):
+    @staticmethod
+    def create_sensorlog_handler(name):
         logging.getLogger(__name__).debug(f"Adding handler {name} for sensor logging")
-        self.sensorlogger = logging.getLogger(name)
+        sensorlogger = logging.getLogger(name)
 
         splitName = name.split('.')
 
         csvHandler = MakeFileHandler('laptop', 'sensor', splitName[1], 'csv')
         csvHandler.setFormatter(CSVFormatter())
-        self.sensorlogger.addHandler(csvHandler)
-        self.sensorlogger.setLevel(logging.INFO)
+        sensorlogger.addHandler(csvHandler)
+        sensorlogger.setLevel(logging.INFO)
 
 
 def logging_receive_forever():
