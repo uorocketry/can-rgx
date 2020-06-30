@@ -19,8 +19,8 @@ def update_config():
         'laptop_listening_ip': '127.0.0.1',
         'rpi_ip': '127.0.0.1'}
 
+    modified = False
     for section, keys in default.items():  # Make sure the config has at least all the keys. If not, init to default
-        modified = False
         if section not in config:
             config[section] = {}
             modified = True
