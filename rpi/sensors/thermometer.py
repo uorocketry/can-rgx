@@ -1,16 +1,15 @@
-import logging
-import threading
 import glob
+import logging
 import os
+import threading
 import time
 
 from rpi.sensors.sensorlogging import SensorLogging
 
 
 class Thermo:
-    
-    names = {'00000bc743d3':'1',
-            '00000bcada29':'2'}
+    names = {'00000bc743d3': '1',
+             '00000bcada29': '2'}
 
     def __init__(self, identity, sensorlogger):
         self.device_file = '/sys/bus/w1/devices/' + identity + '/w1_slave'
@@ -30,14 +29,14 @@ class Thermo:
         f.close()
         return lines
 
-    #the read method called from the main class.
+    # the read method called from the main class.
     def read(self):
         lines = self.read_temp_raw()
         while lines[0].strip()[-3:] != 'YES':
             lines = self.read_temp_raw()
         equals_pos = lines[1].find('t=')
         if equals_pos != -1:
-            temp_string = lines[1][equals_pos+2:]
+            temp_string = lines[1][equals_pos + 2:]
             temp_c = float(temp_string) / 1000.0
             return temp_c
 
@@ -45,25 +44,24 @@ class Thermo:
         inErrorState = False
         while True:
             try:
-                self.sensorlogger.info([time.time()*1000, self.name, self.read()])
+                self.sensorlogger.info([time.time() * 1000, self.name, self.read()])
 
                 if inErrorState:
                     inErrorState = False
                     self.logger.warning("Error has been cleared for {}".format(self.name))
             except OSError:
                 if not inErrorState:
-                    self.logger.exeption("Error while reading from {}".format(self.name))
+                    self.logger.exception("Error while reading from {}".format(self.name))
                     inErrorState = True
-
 
 
 class ThermoList(SensorLogging):
     def setup(self):
         base_dir = '/sys/bus/w1/devices/'
         device_folders = glob.glob(base_dir + '28*')
-    
+
         self.sensor_list = list()
-        
+
         logger = logging.getLogger(__name__)
 
         for i in device_folders:
@@ -80,7 +78,7 @@ class ThermoList(SensorLogging):
         logger = logging.getLogger(__name__)
         for i in self.sensor_list:
             logger.debug("Starting {}".format(i.name))
-            t = threading.Thread(target = i.logging_loop)
+            t = threading.Thread(target=i.logging_loop)
             t.daemon = True
             t.start()
 

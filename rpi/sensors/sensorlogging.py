@@ -1,10 +1,10 @@
-from abc import ABC, abstractmethod
 import logging
-from datetime import datetime
 import multiprocessing
+from abc import ABC, abstractmethod
 
 from shared.customlogging.formatter import CSVFormatter
 from shared.customlogging.handler import MakeFileHandler
+
 
 class SensorLogging(ABC, multiprocessing.Process):
     '''
@@ -17,7 +17,7 @@ class SensorLogging(ABC, multiprocessing.Process):
             folderName : name of the folder to use
             dataRow : list representing the header of the csv file. Do not include timestamp, it will be included automatically
         '''
-        self.sensorlogger = logging.getLogger("sensorlog."+folderName)
+        self.sensorlogger = logging.getLogger("sensorlog." + folderName)
 
         csvHandler = MakeFileHandler('rpi', 'sensor', folderName, 'csv')
         csvHandler.setFormatter(CSVFormatter())
