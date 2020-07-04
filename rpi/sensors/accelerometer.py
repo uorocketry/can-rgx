@@ -45,7 +45,7 @@ CONV_8G_10B = 15.6
 CONV_16G_10B = 31.2
 
 class Accelerometer(SensorLogging):
-    def setup(self, measure_range=RANGE_2G):
+    def setup(self, measure_range=RANGE_4G):
         # SPI init
         self.spi = spidev.SpiDev()
         self.spi.open(SPIBus, SPIDevice)
