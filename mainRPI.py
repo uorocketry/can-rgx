@@ -1,37 +1,37 @@
-import logging.handlers
-import sys
+import logging
+import multiprocessing
 
-import shared.config as config
-from rpi.network.bufferedsockethandler import BufferedSocketHandler
-from rpi.network.server import server_listen_forever
-from rpi.sensors.sensorstart import start_sensors
-from shared.customlogging.filter import SensorFilter
-from shared.customlogging.handler import MakeFileHandler
+from rpi.logging.listener import LoggingListener
+from rpi.network.server import Server
+from rpi.sensors.pressure import Pressure
+from rpi.sensors.thermometer import ThermoList
+from rpi.sensors.vibration import Vibration
+from shared.customlogging.handler import CustomQueueHandler
 
-# Setting up logging to console and file
+if __name__ == '__main__':
+    queue = multiprocessing.Queue(-1)  # Central queue for the logs
+    logListen = LoggingListener(queue)  # Start worker which will actually log everything
+    logListen.start()
 
-logger = logging.getLogger()
-logger.setLevel(logging.INFO)
+    # Setup logging for main process and all child processes
+    h = CustomQueueHandler(queue)
+    root = logging.getLogger()
+    root.addHandler(h)
+    root.setLevel(logging.INFO)
 
-loggingFormat = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-loggingFilter = SensorFilter()
+    # Next lines starts all of the other processes and monitor them in case they quit
+    processClassesList = [Server, Vibration, ThermoList, Pressure]
+    processes = dict()
 
-# Logging to console
-consoleHandler = logging.StreamHandler(sys.stdout)
-consoleHandler.setFormatter(loggingFormat)
-consoleHandler.addFilter(loggingFilter)
-logger.addHandler(consoleHandler)
+    for processClass in processClassesList:
+        p = processClass()
+        p.start()
+        processes[processClass] = p
 
-# Logging to file. A new file is created each run, with the name being the current date and time
-fileHandler = MakeFileHandler('rpi', 'main')
-fileHandler.setFormatter(loggingFormat)
-fileHandler.addFilter(loggingFilter)
-logger.addHandler(fileHandler)
-
-RPIConfig = config.get_config('rpi')
-socketHandler = BufferedSocketHandler(RPIConfig['laptop_ip'], logging.handlers.DEFAULT_TCP_LOGGING_PORT)
-logger.addHandler(socketHandler)
-
-start_sensors()
-
-server_listen_forever()
+    while True:
+        for processClass, process in processes.items():
+            if not process.is_alive():
+                root.error('The process for {} exited! Restarting it...'.format(processClass.__name__))
+                p = processClass()
+                p.start()
+                processes[processClass] = p

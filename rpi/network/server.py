@@ -1,4 +1,5 @@
 import logging
+import multiprocessing
 import select
 import socketserver
 import struct
@@ -79,15 +80,16 @@ class RequestHandler(socketserver.StreamRequestHandler):
             process_message(body, self.client_address)
 
 
-def server_listen_forever():
-    '''
-    Starts a server to listen and handle incoming requests. This will run until the heat 
-    death of the universe, or until the program is interrupted, whichever comes first.
-    '''
-    logger = logging.getLogger(__name__)
-    logger.info("Starting server and listening to incoming connections")
+class Server(multiprocessing.Process):
+    def run(self):
+        '''
+        Starts a server to listen and handle incoming requests. This will run until the heat 
+        death of the universe, or until the program is interrupted, whichever comes first.
+        '''
+        logger = logging.getLogger(__name__)
+        logger.info("Starting server and listening to incoming connections")
 
-    RPIConfig = config.get_config('rpi')
-    with socketserver.TCPServer((RPIConfig['rpi_listening_ip'], RPIConfig.getint('rpi_port')),
-                                RequestHandler) as server:
-        server.serve_forever()
+        RPIConfig = config.get_config('rpi')
+        with socketserver.TCPServer((RPIConfig['rpi_listening_ip'], RPIConfig.getint('rpi_port')),
+                                    RequestHandler) as server:
+            server.serve_forever()

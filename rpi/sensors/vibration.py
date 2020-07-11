@@ -96,9 +96,7 @@ class Vibration(SensorLogging):
     Class which interacts with an ADcmXL3021 vibration sensor.
     '''
 
-    def __init__(self):
-        super().__init__("vibration", ["axis", "lowestfrequency (Hz)", "binsize (Hz)", "value (mg)"])
-
+    def setup(self):
         # Keep track of raised errors
         self.errors = set()
 
@@ -130,10 +128,6 @@ class Vibration(SensorLogging):
         # Spectral averaging. Again, only care about SR0
         self.write_to_register(FFT_AVG1, FFTAverages)
 
-    def __del__(self):
-        self.spi.close()
-        GPIO.cleanup(BUSYPin)
-
     def wait_for_sensor(self):
         '''
         Blocks until sensor is ready
@@ -145,13 +139,12 @@ class Vibration(SensorLogging):
         if check != 0x0BCD and "PROD_ID_Error" not in self.errors:
             logger = logging.getLogger(__name__)
             logger.error(
-                f"PROD_ID is not the expected value: got {hex(check)} instead of 0x0BCD. Is the sensor plugged?" \
+                f"PROD_ID is not the expected value: got {hex(check)} instead of 0x0BCD. Is the sensor plugged?"
                 , extra={'errorID': f'VibrationPROD_ID'})
             self.errors.add("PROD_ID_Error")
         elif check == 0x0BCD and "PROD_ID_Error" in self.errors:
             logger = logging.getLogger(__name__)
-            logger.info(f"Error cleared, PROD_ID is now the expected value." \
-                        , extra={'errorID': f'VibrationPROD_ID'})
+            logger.info(f"Error cleared, PROD_ID is now the expected value.", extra={'errorID': f'VibrationPROD_ID'})
             self.errors.remove("PROD_ID_Error")
 
     def check_sensor_connection(self, block):
@@ -273,7 +266,9 @@ class Vibration(SensorLogging):
 
         return data
 
-    def logging_loop(self):
+    def run(self):
+        super().setup_logging("vibration", ["axis", "lowestfrequency (Hz)", "binsize (Hz)", "value (mg)"])
+        self.setup()
         while True:
             self.check_sensor_connection(True)
             self.check_for_errors()
