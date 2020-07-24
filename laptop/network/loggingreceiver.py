@@ -122,7 +122,12 @@ class LogRecordStreamHandler(socketserver.StreamRequestHandler):
 
 def logging_receive_forever():
     LaptopConfig = config.get_config('laptop')
-    with socketserver.TCPServer((LaptopConfig['laptop_listening_ip'], logging.handlers.DEFAULT_TCP_LOGGING_PORT),
-                                LogRecordStreamHandler) as server:
-        logConnector.start()  # Monitor for connection and send alert to user if necessary
-        server.serve_forever()
+    try:
+        socketserver.TCPServer.allow_reuse_address = True
+        with socketserver.TCPServer((LaptopConfig['laptop_listening_ip'], logging.handlers.DEFAULT_TCP_LOGGING_PORT),
+                                    LogRecordStreamHandler) as server:
+            logConnector.start()  # Monitor for connection and send alert to user if necessary
+            server.serve_forever()
+    except:
+        logging.getLogger(__name__).exception("Error starting the laptop's TCP server! Please restart the whole GUI "
+                                              "application")

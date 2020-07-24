@@ -90,6 +90,7 @@ class Server(multiprocessing.Process):
         logger.info("Starting server and listening to incoming connections")
 
         RPIConfig = config.get_config('rpi')
+        socketserver.TCPServer.allow_reuse_address = True
         with socketserver.TCPServer((RPIConfig['rpi_listening_ip'], RPIConfig.getint('rpi_port')),
                                     RequestHandler) as server:
             server.serve_forever()
