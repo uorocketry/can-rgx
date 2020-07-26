@@ -37,6 +37,7 @@ def receive_from_socket(sock, size):
     return buf
 
 
+# TODO: Add better error handling
 def send_message(message):
     '''
     Sends the request message to the server. Message should be a dictionary (it will be converted to JSON)
@@ -45,6 +46,7 @@ def send_message(message):
     logger = logging.getLogger(__name__)
     try:
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
+            sock.settimeout(1)
             sock.connect(serverIp)
 
             payload = json.dumps(message).encode("utf-8")
