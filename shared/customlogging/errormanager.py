@@ -1,4 +1,5 @@
 import logging
+import random
 
 
 class ErrorManager:
@@ -15,6 +16,10 @@ class ErrorManager:
         """
         self.errors = set()
         self.logger = logging.getLogger(logger_name)
+
+        # Append this number to the error_id in the functions bellow.
+        # This way, different error managers can use the same error_id and not have a collision
+        self.id_append = str(random.randint(0, 100000))
 
     def __check_error(self, error_id):
         """
@@ -36,7 +41,7 @@ class ErrorManager:
         :param error_id: A unique id to identify this error
         """
         if not self.__check_error(error_id):
-            self.logger.error(message, extra={'errorID': error_id})
+            self.logger.error(message, extra={'errorID': error_id + self.id_append})
 
     def warning(self, message, error_id):
         """
@@ -46,7 +51,7 @@ class ErrorManager:
         :param error_id: A unique id to identify this error
         """
         if not self.__check_error(error_id):
-            self.logger.warning(message, extra={'errorID': error_id})
+            self.logger.warning(message, extra={'errorID': error_id + self.id_append})
 
     def resolve(self, message, error_id, always_send=True):
         """
@@ -57,6 +62,6 @@ class ErrorManager:
         """
         if error_id in self.errors:
             self.errors.remove(error_id)
-            logging.info(message, extra={'errorID': error_id})
+            logging.info(message, extra={'errorID': error_id + self.id_append})
         elif always_send:
-            logging.info(message, extra={'errorID': error_id})
+            logging.info(message, extra={'errorID': error_id + self.id_append})
