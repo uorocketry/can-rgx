@@ -61,8 +61,8 @@ class StatusFrame(tk.Frame):
         self.color = highestcolor
         self.currentlevel = highestlevel
         self.status.config(bg=highestcolor)
-        self.flash = highestflash
-        if self.flash:
+        if not self.flash and highestflash:
+            self.flash = True
             self.parent.after(500, self.flash_status, 0)
 
         return clearedError
