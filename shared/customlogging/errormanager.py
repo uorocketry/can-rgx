@@ -33,19 +33,23 @@ class ErrorManager:
 
     def __allow_logging(self, error_id):
         """
-        Performs some checks to see if we should allow this error to be logged. If needed, it will also add the error_id
-        to the self.errors to keep track of it.
+        Performs some checks to see if we should allow this error to be logged.
         :param error_id: The unique id of the error
         :return: If error_id was already raised
         """
         if error_id not in self.errors:
-            self.errors[error_id] = time.time()
             return True
         elif self.debounce_time != 0 and (time.time() - self.errors[error_id]) >= self.debounce_time:
-            self.errors[error_id] = time.time()
             return True
 
         return False
+
+    def __send_error(self, message, error_id, error_level):
+        self.errors[error_id] = (error_level, time.time())
+        if error_level == logging.WARNING:
+            self.logger.warning(message, extra={'errorID': error_id + self.id_append})
+        else:
+            self.logger.error(message, extra={'errorID': error_id + self.id_append})
 
     def error(self, message, error_id):
         """
@@ -56,7 +60,7 @@ class ErrorManager:
         :param error_id: A unique id to identify this error
         """
         if self.__allow_logging(error_id):
-            self.logger.error(message, extra={'errorID': error_id + self.id_append})
+            self.__send_error(message, error_id, logging.ERROR)
 
     def warning(self, message, error_id):
         """
@@ -67,7 +71,7 @@ class ErrorManager:
         :param error_id: A unique id to identify this error
         """
         if self.__allow_logging(error_id):
-            self.logger.warning(message, extra={'errorID': error_id + self.id_append})
+            self.__send_error(message, error_id, logging.WARNING)
 
     def resolve(self, message, error_id, always_send=True):
         """
