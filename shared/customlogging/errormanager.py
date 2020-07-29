@@ -3,6 +3,12 @@ import random
 import time
 
 
+class ErrorData:
+    def __init__(self, error_level):
+        self.last_raised = time.time()
+        self.error_level = error_level
+
+
 class ErrorManager:
     """
     Class to help simplify the error logging and management
@@ -20,8 +26,7 @@ class ErrorManager:
         disabled, i.e. the error must be solved before being allowed to be sent again.
         """
 
-        # Stores the raised errors. The dictionary keys are the error_id, and the values are the last time the error was
-        # raised
+        # Stores the raised errors. The dictionary keys are the error_id, and the values is an object of type ErrorData
         self.errors = dict()
 
         self.logger = logging.getLogger(logger_name)
@@ -39,13 +44,14 @@ class ErrorManager:
         """
         if error_id not in self.errors:
             return True
-        elif self.debounce_time != 0 and (time.time() - self.errors[error_id]) >= self.debounce_time:
+        elif self.debounce_time != 0 and (time.time() - self.errors[error_id].last_raised) >= self.debounce_time:
             return True
 
         return False
 
     def __send_error(self, message, error_id, error_level):
-        self.errors[error_id] = (error_level, time.time())
+        self.errors[error_id] = ErrorData(error_level)
+
         if error_level == logging.WARNING:
             self.logger.warning(message, extra={'errorID': error_id + self.id_append})
         else:
