@@ -5,6 +5,7 @@ import time
 
 class ErrorData:
     def __init__(self, error_level):
+        self.first_raised = time.time()
         self.last_raised = time.time()
         self.error_level = error_level
 
@@ -50,12 +51,39 @@ class ErrorManager:
         return False
 
     def __send_error(self, message, error_id, error_level):
-        self.errors[error_id] = ErrorData(error_level)
+        if error_id not in self.errors:
+            self.errors[error_id] = ErrorData(error_level)
+        else:
+            self.errors[error_id].error_level = error_level
+            self.errors[error_id].last_raised = time.time()
 
         if error_level == logging.WARNING:
             self.logger.warning(message, extra={'errorID': error_id + self.id_append})
         else:
             self.logger.error(message, extra={'errorID': error_id + self.id_append})
+
+    def escalate(self, message, error_id, seconds_between_escalation=10):
+        """
+        Logs an error. First time, the message is sent as a warning. Calling the function again after the specified
+        seconds_between_escalation will resend the message as an error. If debounce_time is 0, calling this function any
+        other times will do nothing. If debounce_time is greater than 0, the message will be allowed to be sent again.
+
+        Resolving the error anytime during this process will reset the error state.
+
+        Using this function along with error() and warning() with the same error_id will result in undefined behavior.
+        :param message: A simple message describing the error
+        :param error_id: A unique id to identify this error
+        :param seconds_between_escalation: The number of seconds before escalating this error
+        :return:
+        """
+
+        if error_id not in self.errors:
+            self.__send_error(message, error_id, logging.WARNING)
+        elif self.errors[error_id].error_level == logging.WARNING \
+                and (time.time() - self.errors[error_id].first_raised) >= seconds_between_escalation:
+            self.__send_error(message, error_id, logging.ERROR)
+        elif (time.time() - self.errors[error_id].last_raised) >= self.debounce_time:
+            self.__send_error(message, error_id, self.errors[error_id].error_level)
 
     def error(self, message, error_id):
         """
