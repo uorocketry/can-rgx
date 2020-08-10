@@ -16,10 +16,18 @@ public:
 
     void stopMotor();
 
+    boolean isMoving() const;
+
+    MotorDirection getDirection() const;
+
 private:
     const uint8_t enPin;
     const uint8_t int1Pin;
     const uint8_t int2Pin;
+
+    bool moving = false;
+    MotorDirection direction = MotorDirection::UP;
 };
+
 
 #endif //ARDUINO_MOTOR_H

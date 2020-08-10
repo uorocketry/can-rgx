@@ -18,10 +18,23 @@ void Motor::startMotor(MotorDirection direction) {
         digitalWrite(int1Pin, LOW);
         digitalWrite(int2Pin, HIGH);
     }
+
+    this->moving = true;
+    this->direction = direction;
 }
 
 void Motor::stopMotor() {
     digitalWrite(int1Pin, LOW);
     digitalWrite(int2Pin, LOW);
     analogWrite(enPin, 255);
+
+    this->moving = false;
+}
+
+boolean Motor::isMoving() const {
+    return moving;
+}
+
+MotorDirection Motor::getDirection() const {
+    return direction;
 }
