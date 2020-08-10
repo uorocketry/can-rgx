@@ -102,4 +102,20 @@ void receiveI2CEvent(int) {
 }
 
 void loop() {
+#ifdef DEBUG
+    delay(5000);
+    PRINTLN("Motor 1 status");
+    PRINT("Moving: ");
+    PRINTLN(motor1.isMoving());
+    PRINT("Direction: ");
+    PRINTLN(motor1.getDirection());
+
+
+    PRINTLN("Motor 2 status");
+    PRINT("Moving: ");
+    PRINTLN(motor2.isMoving());
+    PRINT("Direction: ");
+    PRINTLN(motor2.getDirection());
+    PRINTLN("\n");
+#endif
 }
