@@ -22,12 +22,12 @@ const uint8_t MOTOR2_LOWER_LIMIT = 1;
 const bool ENABLE_PULLUP_RESISTORS = false;
 
 // Ports for the motors. These uses the standard Arduino pin numbers
-const uint8_t MOTOR1_EN = A0;
+const uint8_t MOTOR1_EN = 3;
 const uint8_t MOTOR1_IN1 = 2;
-const uint8_t MOTOR1_IN2 = 3;
-const uint8_t MOTOR2_EN = A1;
-const uint8_t MOTOR2_IN1 = 4;
-const uint8_t MOTOR2_IN2 = 5;
+const uint8_t MOTOR1_IN2 = 4;
+const uint8_t MOTOR2_EN = 5;
+const uint8_t MOTOR2_IN1 = 6;
+const uint8_t MOTOR2_IN2 = 7;
 
 // Communication settings
 const uint8_t I2C_ADDRESS = 0x2;
