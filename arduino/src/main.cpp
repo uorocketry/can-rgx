@@ -21,7 +21,8 @@ const uint8_t MOTOR2_LOWER_LIMIT = 1;
 // its own pullup resistors, so this should be false.
 const bool ENABLE_PULLUP_RESISTORS = false;
 
-// Ports for the motors. These uses the standard Arduino pin numbers
+// Ports for the motors. These uses the standard Arduino pin numbers. Please do not use pin 9 or 10 for the EN pins,
+// because this could possibly cause conflicts with the timer.
 const uint8_t MOTOR1_EN = 3;
 const uint8_t MOTOR1_IN1 = 2;
 const uint8_t MOTOR1_IN2 = 4;
@@ -32,6 +33,9 @@ const uint8_t MOTOR2_IN2 = 7;
 // Communication settings
 const uint8_t I2C_ADDRESS = 0x2;
 const uint64_t SERIAL_RATE = 9600;
+
+// How long to wait in milliseconds before stopping a motor automatically
+const volatile uint16_t MOTOR_TIMEOUT_MILLI = 10 * 1000;
 
 volatile Motor motor1(MOTOR1_EN, MOTOR1_IN1, MOTOR1_IN2);
 volatile Motor motor2(MOTOR2_EN, MOTOR2_IN1, MOTOR2_IN2);
@@ -56,7 +60,19 @@ ISR(PCINT2_vect) {
     }
 }
 
+// Checks every 0.2 s (5Hz) if the motor ran for too long
+ISR(TIMER1_COMPA_vect) {
+    if (motor1.isMoving() && motor1.getRunningTime() > MOTOR_TIMEOUT_MILLI) {
+        motor1.stopMotor();
+    }
+
+    if (motor2.isMoving() && motor2.getRunningTime() > MOTOR_TIMEOUT_MILLI) {
+        motor2.stopMotor();
+    }
+}
+
 void setup() {
+    noInterrupts();
     // Set the limit switch pins as an input by setting the appropriate bit at 0
     DDRB &= ~((1 << MOTOR1_TOP_LIMIT) | (1 << MOTOR1_LOWER_LIMIT));
     DDRD &= ~((1 << MOTOR2_TOP_LIMIT) | (1 << MOTOR2_LOWER_LIMIT));
@@ -67,9 +83,17 @@ void setup() {
     }
 
     // Enable the Pin Change interrupts
-    PCICR |= (1 << PCIE0) | (1 << PCIE2);
-    PCMSK0 |= (1 << MOTOR1_TOP_LIMIT) | (1 << MOTOR1_LOWER_LIMIT);
+    PCICR |= (1 << PCIE0) | (1 << PCIE2); //Enable the actual interrupt on Port B and D
+    PCMSK0 |= (1 << MOTOR1_TOP_LIMIT) | (1 << MOTOR1_LOWER_LIMIT); // Allow the appropriate pins to trigger the interrupt
     PCMSK2 |= (1 << MOTOR2_TOP_LIMIT) | (1 << MOTOR2_LOWER_LIMIT);
+
+
+    // Setup Timer 1 to run the interrupt at 2Hz. See this site for more info: https://oscarliang.com/arduino-timer-and-interrupt-tutorial/
+    TCCR1A = 0;
+    TCCR1B = 0;
+    OCR1A = 12500; // Set the timer to reset when it hits this value. This should make it reset at 5Hz
+    TCCR1B |= (1 << WGM12) | (1 << CS12); // Configure the CTC (clear timer on compare match) mode and a prescaler of 256
+    TIMSK1 |= (1 << OCIE1A); // Enable the output compare A match interrupt
 
     // Setup the Arduino as an i2c slave
     Wire.begin(I2C_ADDRESS);
@@ -78,6 +102,7 @@ void setup() {
 #ifdef DEBUG
     Serial.begin(SERIAL_RATE);
 #endif
+    interrupts();
 }
 
 void receiveI2CEvent(int) {
@@ -103,7 +128,7 @@ void receiveI2CEvent(int) {
 
 void loop() {
 #ifdef DEBUG
-    delay(5000);
+    delay(1000);
     PRINTLN("Motor 1 status");
     PRINT("Moving: ");
     PRINTLN(motor1.isMoving());

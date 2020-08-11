@@ -21,6 +21,7 @@ void Motor::startMotor(MotorDirection direction) volatile {
 
     this->moving = true;
     this->direction = direction;
+    this->startTime = millis();
 }
 
 void Motor::stopMotor() volatile {
@@ -37,4 +38,8 @@ boolean Motor::isMoving() const volatile {
 
 MotorDirection Motor::getDirection() const volatile {
     return direction;
+}
+
+unsigned long Motor::getRunningTime() const volatile {
+    return millis()-startTime;
 }

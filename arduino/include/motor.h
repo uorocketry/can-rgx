@@ -20,6 +20,8 @@ public:
 
     MotorDirection getDirection() const volatile;
 
+    unsigned long getRunningTime() const volatile;
+
 private:
     const uint8_t enPin;
     const uint8_t int1Pin;
@@ -27,6 +29,8 @@ private:
 
     bool moving = false;
     MotorDirection direction = MotorDirection::UP;
+
+    unsigned long startTime = 0;
 };
 
 
