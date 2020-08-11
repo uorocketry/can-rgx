@@ -12,13 +12,13 @@ class Motor {
 public:
     Motor(uint8_t enPin, uint8_t int1Pin, uint8_t int2Pin);
 
-    void startMotor(MotorDirection direction);
+    void startMotor(MotorDirection direction) volatile;
 
-    void stopMotor();
+    void stopMotor() volatile;
 
-    boolean isMoving() const;
+    boolean isMoving() const volatile;
 
-    MotorDirection getDirection() const;
+    MotorDirection getDirection() const volatile;
 
 private:
     const uint8_t enPin;

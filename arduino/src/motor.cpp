@@ -9,7 +9,7 @@ Motor::Motor(uint8_t enPin, uint8_t int1Pin, uint8_t int2Pin) : enPin(enPin), in
     pinMode(int2Pin, OUTPUT);
 }
 
-void Motor::startMotor(MotorDirection direction) {
+void Motor::startMotor(MotorDirection direction) volatile {
     analogWrite(enPin, PWM_DUTY_CYCLE);
     if (direction == MotorDirection::UP) {
         digitalWrite(int1Pin, HIGH);
@@ -23,7 +23,7 @@ void Motor::startMotor(MotorDirection direction) {
     this->direction = direction;
 }
 
-void Motor::stopMotor() {
+void Motor::stopMotor() volatile {
     digitalWrite(int1Pin, LOW);
     digitalWrite(int2Pin, LOW);
     analogWrite(enPin, 255);
@@ -31,10 +31,10 @@ void Motor::stopMotor() {
     this->moving = false;
 }
 
-boolean Motor::isMoving() const {
+boolean Motor::isMoving() const volatile {
     return moving;
 }
 
-MotorDirection Motor::getDirection() const {
+MotorDirection Motor::getDirection() const volatile {
     return direction;
 }

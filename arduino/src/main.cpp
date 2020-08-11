@@ -33,8 +33,8 @@ const uint8_t MOTOR2_IN2 = 7;
 const uint8_t I2C_ADDRESS = 0x2;
 const uint64_t SERIAL_RATE = 9600;
 
-Motor motor1(MOTOR1_EN, MOTOR1_IN1, MOTOR1_IN2);
-Motor motor2(MOTOR2_EN, MOTOR2_IN1, MOTOR2_IN2);
+volatile Motor motor1(MOTOR1_EN, MOTOR1_IN1, MOTOR1_IN2);
+volatile Motor motor2(MOTOR2_EN, MOTOR2_IN1, MOTOR2_IN2);
 
 // Pin Change Interrupt for Port B (motor 1). PCINT0..7
 ISR(PCINT0_vect) {
