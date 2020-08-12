@@ -43,3 +43,15 @@ MotorDirection Motor::getDirection() const volatile {
 unsigned long Motor::getRunningTime() const volatile {
     return millis()-startTime;
 }
+
+bool Motor::isInErrorState() const volatile {
+    return inErrorState;
+}
+
+void Motor::setErrorState() volatile {
+    inErrorState = true;
+}
+
+void Motor::clearErrorState() volatile {
+    inErrorState = false;
+}

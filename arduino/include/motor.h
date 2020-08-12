@@ -22,6 +22,12 @@ public:
 
     unsigned long getRunningTime() const volatile;
 
+    bool isInErrorState() const volatile;
+
+    void setErrorState() volatile;
+
+    void clearErrorState() volatile;
+
 private:
     const uint8_t enPin;
     const uint8_t int1Pin;
@@ -31,6 +37,10 @@ private:
     MotorDirection direction = MotorDirection::UP;
 
     unsigned long startTime = 0;
+
+    // Represent if a motor is in some kind of general error state, for example it got stopped because of the timer
+    // instead of the limit switch, possibly indicating a failure of the limit switch
+    bool inErrorState = false;
 };
 
 

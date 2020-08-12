@@ -44,9 +44,11 @@ volatile Motor motor2(MOTOR2_EN, MOTOR2_IN1, MOTOR2_IN2);
 ISR(PCINT0_vect) {
     if (motor1.isMoving() && motor1.getDirection() == MotorDirection::UP && ((PINB >> MOTOR1_TOP_LIMIT) & 1) == 0) {
         motor1.stopMotor();
+        motor1.clearErrorState();
     } else if (motor1.isMoving() && motor1.getDirection() == MotorDirection::DOWN &&
                ((PINB >> MOTOR1_LOWER_LIMIT) & 1) == 0) {
         motor1.stopMotor();
+        motor1.clearErrorState();
     }
 }
 
@@ -54,9 +56,11 @@ ISR(PCINT0_vect) {
 ISR(PCINT2_vect) {
     if (motor2.isMoving() && motor2.getDirection() == MotorDirection::UP && ((PIND >> MOTOR2_TOP_LIMIT) & 1) == 0) {
         motor2.stopMotor();
+        motor2.clearErrorState();
     } else if (motor2.isMoving() && motor2.getDirection() == MotorDirection::DOWN &&
                ((PIND >> MOTOR2_LOWER_LIMIT) & 1) == 0) {
         motor2.stopMotor();
+        motor2.clearErrorState();
     }
 }
 
@@ -64,10 +68,12 @@ ISR(PCINT2_vect) {
 ISR(TIMER1_COMPA_vect) {
     if (motor1.isMoving() && motor1.getRunningTime() > MOTOR_TIMEOUT_MILLI) {
         motor1.stopMotor();
+        motor1.setErrorState();
     }
 
     if (motor2.isMoving() && motor2.getRunningTime() > MOTOR_TIMEOUT_MILLI) {
         motor2.stopMotor();
+        motor2.setErrorState();
     }
 }
 
@@ -98,6 +104,7 @@ void setup() {
     // Setup the Arduino as an i2c slave
     Wire.begin(I2C_ADDRESS);
     Wire.onReceive(receiveI2CEvent);
+    Wire.onRequest(sendI2CState);
 
 #ifdef DEBUG
     Serial.begin(SERIAL_RATE);
@@ -105,6 +112,8 @@ void setup() {
     interrupts();
 }
 
+// This function expects to receive two bits from I2C. The MSB represents the motorNumber (0 for motor 1 and 1 for motor 2)
+// THE LSB represents the motor direction. 0 is UP, 1 is DOWN
 void receiveI2CEvent(int) {
     while (Wire.available()) {
         uint8_t data = Wire.read();
@@ -134,6 +143,16 @@ void receiveI2CEvent(int) {
     }
 }
 
+// Sends the motors state to the RPi in a 4 bit number, 2 bit for each motor.
+// The MSB of a motor is set to 1 if that motor is moving. The LSB is set to 1 if that motor is in an error state.
+// The two most significant bits are for motor 1, the other two LSB are for motor 2.
+// For example, if motor 1 is not moving and in an error state, and motor 2 is moving and not in error state, 0110 will be sent
+void sendI2CState() {
+    uint8_t state = (motor1.isMoving() << 3) | (motor1.isInErrorState() << 2) | (motor2.isMoving() << 1) | motor2.isInErrorState();
+
+    Wire.write(state);
+}
+
 void loop() {
 #ifdef DEBUG
     delay(1000);
@@ -149,6 +168,9 @@ void loop() {
     PRINTLN(motor2.isMoving());
     PRINT("Direction: ");
     PRINTLN(motor2.getDirection());
+
+    PRINT("State that would be sent to RPi: ");
+    PRINTLN((motor1.isMoving() << 3) | (motor1.isInErrorState() << 2) | (motor2.isMoving() << 1) | motor2.isInErrorState(), BIN);
     PRINTLN("\n");
 #endif
 }
