@@ -116,12 +116,20 @@ void receiveI2CEvent(int) {
             PRINT("Activating motor 1 in direction ");
             PRINTLN(motorDirection);
 
-            motor1.startMotor(motorDirection);
+            // Only start the motor if the limit is not pressed
+            if (!(motorDirection == MotorDirection::UP && ((PINB >> MOTOR1_TOP_LIMIT) & 1) == 0) &&
+                !(motorDirection == MotorDirection::DOWN && ((PINB >> MOTOR1_LOWER_LIMIT) & 1) == 0)) {
+                motor1.startMotor(motorDirection);
+            }
         } else {
             PRINT("Activating motor 2 in direction ");
             PRINTLN(motorDirection);
 
-            motor2.startMotor(motorDirection);
+            // Only start the motor if the limit is not pressed
+            if (!(motorDirection == MotorDirection::UP && ((PIND >> MOTOR2_TOP_LIMIT) & 1) == 0) &&
+                !(motorDirection == MotorDirection::DOWN && ((PIND >> MOTOR2_LOWER_LIMIT) & 1) == 0)) {
+                motor2.startMotor(motorDirection);
+            }
         }
     }
 }
