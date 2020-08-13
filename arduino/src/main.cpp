@@ -122,18 +122,12 @@ void receiveI2CEvent(int) {
         auto motorDirection = static_cast<MotorDirection>(data & 1);
 
         if (motorNumber == 0) {
-            PRINT("Activating motor 1 in direction ");
-            PRINTLN(motorDirection);
-
             // Only start the motor if the limit is not pressed
             if (!(motorDirection == MotorDirection::UP && ((PINB >> MOTOR1_TOP_LIMIT) & 1) == 0) &&
                 !(motorDirection == MotorDirection::DOWN && ((PINB >> MOTOR1_LOWER_LIMIT) & 1) == 0)) {
                 motor1.startMotor(motorDirection);
             }
         } else {
-            PRINT("Activating motor 2 in direction ");
-            PRINTLN(motorDirection);
-
             // Only start the motor if the limit is not pressed
             if (!(motorDirection == MotorDirection::UP && ((PIND >> MOTOR2_TOP_LIMIT) & 1) == 0) &&
                 !(motorDirection == MotorDirection::DOWN && ((PIND >> MOTOR2_LOWER_LIMIT) & 1) == 0)) {
@@ -155,7 +149,7 @@ void sendI2CState() {
 
 void loop() {
 #ifdef DEBUG
-    delay(1000);
+    delay(5000);
     PRINTLN("Motor 1 status");
     PRINT("Moving: ");
     PRINTLN(motor1.isMoving());
