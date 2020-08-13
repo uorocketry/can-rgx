@@ -14,8 +14,8 @@ const uint8_t MOTOR1_TOP_LIMIT = 0;
 const uint8_t MOTOR1_LOWER_LIMIT = 1;
 
 // PORT D (digital pins 0 to 7)
-const uint8_t MOTOR2_TOP_LIMIT = 0;
-const uint8_t MOTOR2_LOWER_LIMIT = 1;
+const uint8_t MOTOR2_TOP_LIMIT = 2;
+const uint8_t MOTOR2_LOWER_LIMIT = 3;
 
 // If we should enable the internal pullup resistors. For testing, this may be needed, but the final board will have
 // its own pullup resistors, so this should be false.
@@ -23,12 +23,12 @@ const bool ENABLE_PULLUP_RESISTORS = false;
 
 // Ports for the motors. These uses the standard Arduino pin numbers. Please do not use pin 9 or 10 for the EN pins,
 // because this could possibly cause conflicts with the timer.
-const uint8_t MOTOR1_EN = 3;
-const uint8_t MOTOR1_IN1 = 2;
-const uint8_t MOTOR1_IN2 = 4;
-const uint8_t MOTOR2_EN = 5;
-const uint8_t MOTOR2_IN1 = 6;
-const uint8_t MOTOR2_IN2 = 7;
+const uint8_t MOTOR1_EN = 5;
+const uint8_t MOTOR1_IN1 = 4;
+const uint8_t MOTOR1_IN2 = 6;
+const uint8_t MOTOR2_EN = 10;
+const uint8_t MOTOR2_IN1 = 11;
+const uint8_t MOTOR2_IN2 = 12;
 
 // Communication settings
 const uint8_t I2C_ADDRESS = 0x2;
