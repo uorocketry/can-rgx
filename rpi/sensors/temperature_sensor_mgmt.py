@@ -82,12 +82,6 @@ class ThermoList(SensorLogging):
         """
         Method to pass value to temperautre management process
         """
-        #to send data to temp_management
-        #ids of interest
-        BOTTOM_RIGHT = '00000bc743d3' or '1'
-        TOP_LEFT = '00000bc743d3'or '2'
-        CENTER = '00000bc743d3' or '4'
-
         self.id = sensor_id
 
         ret_temp_list = []
