@@ -1,4 +1,4 @@
-#import RPi.GPIO as GPIO
+import RPi.GPIO as GPIO
 import concurrent.futures
 import time
 import tkinter
@@ -206,7 +206,7 @@ if __name__ == "__main__":
     finish = time.perf_counter()
     print(f'Finished in {round(finish-start, 2)} second(s)')
 
-    time.sleep(1)
+    time.sleep(0.01)
 
     t = TempManagement.call_pid(1.2, 1, 0.001, L=10)
 
