@@ -2,11 +2,10 @@ import RPi.GPIO as GPIO
 import concurrent.futures
 import time
 import tkinter
-
+import multiprocessing
 import matplotlib
 matplotlib.use('agg')
 import matplotlib.pyplot as plt
-
 import numpy as np
 from scipy.interpolate import BSpline, make_interp_spline
 from temperature_sensor_mgmt import ThermoList
@@ -62,7 +61,7 @@ class PID():
         """ 
         Clear PID computations and coefficients
         """
-        self.SetPoint = 0.0   
+        self.SetPoint = 35 #desired temp
         self.ITerm = 0.0
         self.DTerm = 0.0
         self.last_error = 0.0
@@ -77,7 +76,7 @@ class PID():
         """
         Calculate PID value for given reference feedback
         """
-        error = self.SetPoint - feedback_value    #i.e. desired - actual
+        error = self.SetPoint - feedback_value    # desired - actual
 
         self.current_time = current_time if current_time is not None else time.time()
         delta_time = self.current_time - self.last_time
