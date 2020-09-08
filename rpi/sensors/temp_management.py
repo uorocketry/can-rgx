@@ -148,8 +148,6 @@ class TempManagement():
         GPIO.setmode(GPIO.BCM)
         GPIO.setup(self.PIN, GPIO.OUT)
 
-        avg_t = GetCurrentTemp.setup()
-
         self.call_pid(1.2, 1, 0.001, L=10)
 
 
@@ -167,7 +165,10 @@ class TempManagement():
         pid.setSampleTime(0.05)
 
         END = L
+
+        #get feedback aka avg (current) temperature
         feedback = GetCurrentTemp.setup()
+
 
         feedback_list = []
         time_list = []
