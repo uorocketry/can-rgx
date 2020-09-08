@@ -1,8 +1,8 @@
+import logging
 import RPi.GPIO as GPIO
 import concurrent.futures
 import time
 import tkinter
-import multiprocessing
 import matplotlib
 matplotlib.use('agg')
 import matplotlib.pyplot as plt
@@ -173,6 +173,7 @@ class TempManagement():
 
             if pid.SetPoint > 0:
                 feedback += (output - (1/i))
+            
             if i>9 :
                 pid.SetPoint = 1
             
@@ -182,7 +183,8 @@ class TempManagement():
             elif pid.error == 0:
                 self.motor_off(PIN)
 
-            else print("Unprecedented temperature. Hotter than 35 C. No means of mitigation.") 
+            else:
+                 print("Unprecedented temperature. Hotter than 35 C. No means of mitigation.") 
 
             time.sleep(0.02)
 

@@ -5,6 +5,7 @@ import threading
 import time
 
 from sensorlogging import SensorLogging
+from temp_management import GetCurrentTemp
 
 
 """
@@ -84,20 +85,20 @@ class ThermoList(SensorLogging):
         """
         self.id = sensor_id
 
-        ret_temp_list = []
-
         for i in self.sensor_list:
             #create list with values of interest that will be returned
             if i == self.id:
                #call self.read() --> returns temp_c --> pass to temp_management
                 target_temp = i.read()
-                ret_temp_list.append(target_temp)
-                return ret_temp_list
+                return target_temp
 
     def run(self):
         super().setup_logging("thermometer", ["id", "value"])
         self.setup()
         logger = logging.getLogger(__name__)
+
+        #temp management thread
+        tm = threading.Thread(target=GetCurrentTemp.setup)
 
         for i in self.sensor_list:
             logger.debug("Starting {}".format(i.name))
