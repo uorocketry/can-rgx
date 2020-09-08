@@ -7,6 +7,12 @@ import time
 from sensorlogging import SensorLogging
 
 
+"""
+THESE OPERATIONS WILL BE DONE IN THE TEMP SENSOR CODE 'thermometer.py'. THIS PROGRAM IS JUST
+FOR TESTING.
+"""
+
+
 class Thermo:
     names = {'00000bc743d3': '1',
              '00000bcada29': '2'}
