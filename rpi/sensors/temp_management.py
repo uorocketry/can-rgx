@@ -76,6 +76,17 @@ class PID():
     def update(self, feedback_value, current_time=None):
         """
         Calculate PID value for given reference feedback
+        PSEUDO CODE
+
+        while(1) {
+        error = desired_value – actual_value
+        integral = integral_prior + error * iteration_time
+        derivative = (error – error_prior) / iteration_time
+        output = KP*error + KI*integral + KD*derivative + bias
+        error_prior = error
+        integral_prior = integral
+        sleep(iteration_time)
+        }
         """
         self.error = self.SetPoint - feedback_value    # desired - actual
 
@@ -164,31 +175,21 @@ class TempManagement():
         pid.SetPoint = 35    #desired temp. val
         pid.setSampleTime(0.05)
 
-        END = L
-
-        #get feedback aka avg (current) temperature
-        feedback = GetCurrentTemp.setup()
-
-
         feedback_list = []
         time_list = []
         setpoint_list = []
 
-        for i in range(1, END):
+        while True:
+            #get feedback aka avg (current) temperature
+            feedback = GetCurrentTemp.setup()
             pid.update(feedback)
             output = pid.output
-
-            if pid.SetPoint > 0:
-                feedback += (output - (1/i))
-            
-            if i>9 :
-                pid.SetPoint = 1
             
             if pid.error > 0:
-                self.motor_on(PIN)
+                self.motor_on(self.PIN)
             
-            elif pid.error == 0:
-                self.motor_off(PIN)
+            elif -0.1 <= pid.error <= 0.1:
+                self.motor_off(self.PIN)
 
             else:
                  print("Unprecedented temperature. Hotter than 35 C. No means of mitigation.") 
