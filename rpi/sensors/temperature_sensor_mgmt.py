@@ -94,8 +94,6 @@ class ThermoList(SensorLogging):
                 ret_temp_list.append(target_temp)
                 return ret_temp_list
 
-
-
     def run(self):
         super().setup_logging("thermometer", ["id", "value"])
         self.setup()

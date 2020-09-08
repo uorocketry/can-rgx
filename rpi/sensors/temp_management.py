@@ -27,7 +27,7 @@ class GetCurrentTemp():
         return_data = []
 
         #calls target func and sends iterable sensor id, returning values respectively
-        for result in executor.map(temperature_sensor_mgmt.Thermolist.pass_value, sensor_id):
+        for result in executor.map(Thermolist.pass_value, sensor_id):
         #for result in executor.map(self.dummy_func, sensor_id):
             print('temp: {0}'.format(result))
             return_data.append(result)
@@ -76,7 +76,7 @@ class PID():
         """
         Calculate PID value for given reference feedback
         """
-        error = self.SetPoint - feedback_value    # desired - actual
+        self.error = self.SetPoint - feedback_value    # desired - actual
 
         self.current_time = current_time if current_time is not None else time.time()
         delta_time = self.current_time - self.last_time
@@ -97,7 +97,7 @@ class PID():
 
             #save last time and last error for next calculation
             self.last_time = self.current_time
-            self.last_error = error
+            self.last_error = self.error
 
             self.output = self.PTerm + (self.Ki * self.ITerm) + (self.Kd * self.DTerm)
         
@@ -147,14 +147,14 @@ class TempManagement():
         GPIO.setmode(GPIO.BCM)
         GPIO.setup(self.PIN, GPIO.OUT)
 
-    def motor_on(pin):
+    def motor_on(self, pin):
         GPIO.output(pin, GPIO.HIGH)  # Turn relay on
 
-    def motor_off(pin):
+    def motor_off(self, pin):
         GPIO.output(pin, GPIO.LOW)  # Turn relay off
     
 
-    def call_pid(P, I, D, L):
+    def call_pid(self, P, I, D, L):
         pid = PID(P, I, D)
 
         pid.SetPoint = 35    #desired temp. val
@@ -170,10 +170,20 @@ class TempManagement():
         for i in range(1, END):
             pid.update(feedback)
             output = pid.output
+
             if pid.SetPoint > 0:
                 feedback += (output - (1/i))
             if i>9 :
                 pid.SetPoint = 1
+            
+            if pid.error > 0:
+                self.motor_on(PIN)
+            
+            elif pid.error == 0:
+                self.motor_off(PIN)
+
+            else print("Unprecedented temperature. Hotter than 35 C. No means of mitigation.") 
+
             time.sleep(0.02)
 
             feedback_list.append(feedback)
