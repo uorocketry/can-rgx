@@ -36,6 +36,7 @@ class GetCurrentTemp():
                     
         avg_temp = sum_list/total_sensors
         print(f'Average temp: {avg_temp}')
+    
         return avg_temp
 
     def dummy_func(self, id):
@@ -147,6 +148,11 @@ class TempManagement():
         GPIO.setmode(GPIO.BCM)
         GPIO.setup(self.PIN, GPIO.OUT)
 
+        avg_t = GetCurrentTemp.setup()
+
+        self.call_pid(1.2, 1, 0.001, L=10)
+
+
     def motor_on(self, pin):
         GPIO.output(pin, GPIO.HIGH)  # Turn relay on
 
@@ -161,7 +167,7 @@ class TempManagement():
         pid.setSampleTime(0.05)
 
         END = L
-        feedback = GetCurrentTemp.setup
+        feedback = GetCurrentTemp.setup()
 
         feedback_list = []
         time_list = []
