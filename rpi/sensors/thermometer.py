@@ -5,6 +5,7 @@ import os
 import time
 
 from rpi.sensors.sensorlogging import SensorLogging
+from rpi.sensors.temp_management import TempManagement
 
 
 class Thermo:
@@ -74,10 +75,27 @@ class ThermoList(SensorLogging):
         if len(Thermo.names) != len(self.sensor_list):
             logger.warning("Not all known thermometers have been found")
 
+    def pass_value(self, sensor_id):
+        """
+        Method to pass value to temperautre management process
+        """
+        self.id = sensor_id
+
+        for i in self.sensor_list:
+            #create list with values of interest that will be returned
+            if i == self.id:
+               #call self.read() --> returns temp_c --> pass to temp_management
+                target_temp = i.read()
+                return target_temp
+
     def run(self):
         super().setup_logging("thermometer", ["id", "value"])
         self.setup()
         logger = logging.getLogger(__name__)
+
+        #temp management thread
+        tm = threading.Thread(target=TempManagement.setup)
+
         for i in self.sensor_list:
             logger.debug("Starting {}".format(i.name))
             t = threading.Thread(target = i.logging_loop)

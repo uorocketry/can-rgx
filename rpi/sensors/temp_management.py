@@ -3,12 +3,10 @@ import RPi.GPIO as GPIO
 import concurrent.futures
 import time
 import tkinter
-import matplotlib
-matplotlib.use('agg')
 import matplotlib.pyplot as plt
 import numpy as np
 from scipy.interpolate import BSpline, make_interp_spline
-from temperature_sensor_mgmt import ThermoList
+import rpi.sensors.thermometer
 
 class GetCurrentTemp():
     def setup(self):
@@ -169,7 +167,7 @@ class TempManagement():
         GPIO.output(pin, GPIO.LOW)  # Turn relay off
     
 
-    def call_pid(self, P, I, D, L):
+    def call_pid(self, P, I, D):
         pid = PID(P, I, D)
 
         pid.SetPoint = 35    #desired temp. val
@@ -219,6 +217,8 @@ class TempManagement():
         plt.grid(True)
         plt.show()
 
+
+"""
 if __name__ == "__main__":
     start = time.perf_counter()
     GetCurrentTemp().setup()
@@ -229,4 +229,4 @@ if __name__ == "__main__":
 
     t = TempManagement.call_pid(1.2, 1, 0.001, L=10)
 
-
+"""
