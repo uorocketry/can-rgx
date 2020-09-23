@@ -18,7 +18,7 @@ DATA_Z1 = 0x37     #z-axis data1
 
 # SPI config
 SPI_MAX_CLOCK_HZ = 1000000  # 1MHz
-SPI_MODE = 0b01  # or 0b01
+SPI_MODE = 0b11
 SPIBus = 0
 SPIDevice = 1     #0 or 1
 
