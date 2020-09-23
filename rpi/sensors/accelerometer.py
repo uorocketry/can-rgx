@@ -20,7 +20,8 @@ DATA_Z1 = 0x37     #z-axis data1
 SPI_MAX_CLOCK_HZ = 1000000  # 1MHz
 SPI_MODE = 0b11
 SPIBus = 0
-SPIDevice = 1     #0 or 1
+SPIDevice = 1  # 0 or 1
+CSHIGH = False
 
 # Data Range
 RANGE_2G = 0b00001100  #full resolution (10bits) , MSB mode, +/- 2g  max in flight is 0-2g
@@ -34,16 +35,18 @@ SELF_TEST = 0b10001111   #full resolution (13bits) MSB mode, +/-16g
 READ_BIT = 0x01
 WRITE_BIT = 0x00
 DUMMY_BYTE = 0x00
-MEASURE_MODE = 0b00001000 
-OUTPUT_RATE = 0b00001111    #value for BW register ; 3200Hz
+MEASURE_MODE = 0b00001000
+OUTPUT_RATE = 0b00001111  # value for BW register ; 3200Hz
 
-#Conversion factor
-CONV_FULLR = 3.9    #applicable for all gs
-CONV_2G_10B = 3.9   #mg/LSB
+# Conversion factor
+CONV_FULLR = 3.9  # applicable for all gs
+CONV_2G_10B = 3.9  # mg/LSB
 CONV_4G_10B = 7.8
 CONV_8G_10B = 15.6
 CONV_16G_10B = 31.2
 
+
+# noinspection PyAttributeOutsideInit
 class Accelerometer(SensorLogging):
     def setup(self, measure_range=RANGE_4G):
         # SPI init
@@ -51,6 +54,7 @@ class Accelerometer(SensorLogging):
         self.spi.open(SPIBus, SPIDevice)
         self.spi.max_speed_hz = SPI_MAX_CLOCK_HZ
         self.spi.mode = SPI_MODE
+        self.spi.cshigh = CSHIGH
 
         # Device init
         self._set_measure_range(measure_range)
