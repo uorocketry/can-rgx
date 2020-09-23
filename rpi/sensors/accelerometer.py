@@ -1,24 +1,24 @@
-import spidev
 import time
-import struct
+
+import spidev
 
 from rpi.sensors.sensorlogging import SensorLogging
 
-#relevant registers
-DATA_FORMAT =  0x31      #clear bit d6 for 4 wire, set for 3 wire
-BW_RATE = 0x2C           #date and power mode control
-POWER_CTL = 0x2D            #power saving features control 
-    
-DATA_X0 = 0x32     #x-axis data0
-DATA_X1 = 0x33     #x-axis data1
+# relevant registers
+DATA_FORMAT = 0x31  # clear bit d6 for 4 wire, set for 3 wire
+BW_RATE = 0x2C  # date and power mode control
+POWER_CTL = 0x2D  # power saving features control
+
+DATA_X0 = 0x32  # x-axis data0
+DATA_X1 = 0x33  # x-axis data1
 DATA_Y0 = 0x34     #y-axis data0
 DATA_Y1 = 0x35     #y-axis data1
 DATA_Z0 = 0x36     #z-axis data0
 DATA_Z1 = 0x37     #z-axis data1
 
 # SPI config
-SPI_MAX_CLOCK_HZ = 125000000 #125MHz
-SPI_MODE = 0b01   #or 0b01
+SPI_MAX_CLOCK_HZ = 1000000  # 1MHz
+SPI_MODE = 0b01  # or 0b01
 SPIBus = 0
 SPIDevice = 1     #0 or 1
 
