@@ -7,7 +7,6 @@ from DMXEnttecPro import Controller
 
 class LEDs:
     def __init__(self):
-        # TODO: Set the right port
         self.dmx = Controller('/dev/ttyUSB0', auto_submit=True)
 
         # Use a lock to access the DMX Controller. Not clear if this is needed, but better be safe than worry.
@@ -17,7 +16,7 @@ class LEDs:
         with self.lock:
             logger = logging.getLogger(__name__)
             logger.info("Activating LED {}".format(led_number))
-            self.dmx.set_channel(led_number, 255)
+            self.dmx.set_channel(led_number, 50)  # TODO: Set the appropriate intensity value
             time.sleep(5)
             self.dmx.set_channel(led_number, 0)
             logger.info("LED {} has finished activating".format(led_number))
