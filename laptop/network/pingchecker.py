@@ -1,8 +1,8 @@
-import logging
 import threading
 import time
 
 from laptop.network.client import send_message
+from shared.customlogging.errormanager import ErrorManager
 from shared.network.requesttypes import RequestTypes
 
 
@@ -19,25 +19,17 @@ class PingChecker(threading.Thread):
         self.setDaemon(True)
 
     def run(self):
-        logger = logging.getLogger(__name__)
-
-        inError = False
-        tryCount = 10
         message = {'type': RequestTypes.PING}
+        error_manager = ErrorManager(10)
         while True:
             confirm = send_message(message)
 
-            if confirm and inError:
-                logger.info("Ping sent successfully to RPI", extra={'errorID': 'RPIPing'})
-                inError = False
-                tryCount = 10
-            elif not confirm:
+            if not confirm:
                 inError = True
-                if tryCount >= 5:  # Try not to spam the user if there is an error
-                    logger.warning("Error while sending ping to RPI", extra={'errorID': 'RPIPing'})
-                    tryCount = -1
-
-                tryCount += 1
+                error_manager.warning("Error while sending ping to RPI", "RPIPing")
+            else:
+                inError = False
+                error_manager.resolve("Ping sent successfully to RPI", "RPIPing", False)
 
             if not inError:
                 time.sleep(10)
