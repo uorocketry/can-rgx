@@ -8,7 +8,7 @@ class BufferedSocketHandler(logging.handlers.SocketHandler):
     def __init__(self, host, port):
         super().__init__(host, port)
 
-        self.buffer = deque()
+        self.buffer = deque(maxlen=1000)  # TODO: Review if this maximum length is the ideal one
 
     def emit(self, record):
         '''
