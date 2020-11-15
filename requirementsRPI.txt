@@ -1,0 +1,3 @@
+# Dependencies for the RPI. To install, run: pip install -r requirementsRPI.text
+
+DMXEnttecPro

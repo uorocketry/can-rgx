@@ -5,7 +5,7 @@ import socketserver
 import struct
 
 import shared.config as config
-from rpi.network.messagehandler import process_message
+from rpi.network.messagehandler import MessageHandler
 
 
 class NetworkError(Exception):
@@ -18,6 +18,9 @@ class NetworkReadingTimeoutError(Exception):
 
 class NetworkWritingTimeoutError(Exception):
     pass
+
+
+message_handler = None
 
 
 class RequestHandler(socketserver.StreamRequestHandler):
@@ -77,7 +80,8 @@ class RequestHandler(socketserver.StreamRequestHandler):
         except:
             logger.exception("Major error while handling client connection")
         else:
-            process_message(body, self.client_address)
+            # noinspection PyUnresolvedReferences
+            message_handler.process_message(body, self.client_address)
 
 
 class Server(multiprocessing.Process):
@@ -93,4 +97,6 @@ class Server(multiprocessing.Process):
         socketserver.TCPServer.allow_reuse_address = True
         with socketserver.TCPServer((RPIConfig['rpi_listening_ip'], RPIConfig.getint('rpi_port')),
                                     RequestHandler) as server:
+            global message_handler
+            message_handler = MessageHandler()
             server.serve_forever()

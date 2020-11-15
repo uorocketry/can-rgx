@@ -1,6 +1,9 @@
 import tkinter as tk
 import tkinter.messagebox
 
+from laptop.network.client import send_message
+from shared.network.requesttypes import RequestTypes
+
 
 class GeneralControlFrame(tk.Frame):
     def __init__(self, parent, elementName, amount):
@@ -38,3 +41,7 @@ class MotorFrame(GeneralControlFrame):
 class LEDFrame(GeneralControlFrame):
     def __init__(self, parent):
         super().__init__(parent, "LED", 5)
+
+    def activate_element(self, index):
+        message = {'type': RequestTypes.CONTROLLED, 'ledNumber': index}
+        send_message(message)
