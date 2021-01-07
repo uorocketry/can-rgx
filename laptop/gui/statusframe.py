@@ -24,10 +24,10 @@ class StatusFrame(tk.Frame):
         self.errorIDs = dict()
 
     def update_status(self, record):
-        '''
+        """
         Updates the status display from the record.
         Returns if the record cleared an existing error.
-        '''
+        """
         level = record.levelno
 
         clearedError = False

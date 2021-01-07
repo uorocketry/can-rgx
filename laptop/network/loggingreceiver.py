@@ -21,10 +21,10 @@ error_manager = ErrorManager(5)
 
 
 class LogRecordConnector(threading.Thread):
-    '''
+    """
     Simple class that will check if a client has connected to the logging server.
     If no client connects after some time, an alert will be sent to the user.
-    '''
+    """
 
     def __init__(self):
         super().__init__()

@@ -21,13 +21,13 @@ class NetworkWritingTimeoutError(Exception):
 
 
 class RequestHandler(socketserver.StreamRequestHandler):
-    '''
+    """
     Handles an incoming request. It expects the request to have a header of type
     unsigned long indicating the size of the following body. Body should be in JSON with
-    utf-8 encoding. If the message can successfully be parsed (but not necessarily processed), 
+    utf-8 encoding. If the message can successfully be parsed (but not necessarily processed),
     a "OK" will be sent back to the client. If there is an error while parsing the message,
     the connection will be closed without anything being sent.
-    '''
+    """
 
     def read_chunk(self, size):
         buf = b""
@@ -82,10 +82,10 @@ class RequestHandler(socketserver.StreamRequestHandler):
 
 class Server(multiprocessing.Process):
     def run(self):
-        '''
-        Starts a server to listen and handle incoming requests. This will run until the heat 
+        """
+        Starts a server to listen and handle incoming requests. This will run until the heat
         death of the universe, or until the program is interrupted, whichever comes first.
-        '''
+        """
         logger = logging.getLogger(__name__)
         logger.info("Starting server and listening to incoming connections")
 

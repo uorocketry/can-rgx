@@ -7,11 +7,11 @@ from shared.network.requesttypes import RequestTypes
 
 
 class PingChecker(threading.Thread):
-    '''
+    """
     Continuously sends pings to the RPI. If the RPI cannot be reached
     for some reasons, alert the user. The goal is to catch network problems
     as soon as possible.
-    '''
+    """
 
     def __init__(self):
         super().__init__()

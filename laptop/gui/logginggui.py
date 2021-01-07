@@ -5,10 +5,10 @@ import tkinter.scrolledtext as tkst
 
 class LoggingGUIHandler(logging.Handler):
     def __init__(self, loggingGUI, statusFrame):
-        '''
-        loggingGui: instance of LoggingGUI to send messages to 
+        """
+        loggingGui: instance of LoggingGUI to send messages to
         statusFrame: statusFrame to update
-        '''
+        """
         super().__init__()
         self.gui = loggingGUI
         self.status = statusFrame
