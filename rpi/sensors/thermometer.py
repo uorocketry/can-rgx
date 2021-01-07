@@ -97,6 +97,11 @@ class ThermometerList(threading.Thread):
 
 
 class Thermometer(SensorLogging):
+    """
+    Simply used to start the logging of the temperature sensors and start the temperature management thread.
+    This class doesn't contain any other logic.
+    """
+
     def start_thermometer_threads(self):
         logger = logging.getLogger(__name__)
 
