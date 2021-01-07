@@ -91,7 +91,8 @@ class ErrorManager:
         if the debounce_time is not 0. Resolving the error by calling resolve() resets the error state, i.e.
         calling this function again will resend the error.
         :param message: A simple message describing the error
-        :param error_id: A unique id to identify this error
+        :param error_id: A unique id to identify this error. Only needs to be unique for this particular ErrorManager
+        instance.
         """
         if self.__allow_logging(error_id):
             self.__send_error(message, error_id, logging.ERROR)
