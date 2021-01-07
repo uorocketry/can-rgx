@@ -12,12 +12,11 @@ from shared.customlogging.filter import SensorFilter
 from shared.customlogging.handler import MakeFileHandler
 
 # Setting up logging to console and file
-
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
 loggingFormat = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-loggingFormatConsole = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s', '%H:%M:%S')
+loggingFormatWindow = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s', '%H:%M:%S')
 loggingFilter = SensorFilter()
 
 # Logging to console
@@ -32,7 +31,7 @@ fileHandler.setFormatter(loggingFormat)
 fileHandler.addFilter(loggingFilter)
 logger.addHandler(fileHandler)
 
-# Seting up of the GUI
+# Setting up of the GUI
 root = tk.Tk()
 
 # Setup the GUI for controlling the experiment
@@ -42,7 +41,7 @@ controlGUI = controlgui.ControlGUI(window2)
 # Setup the logging window
 logGUI = logginggui.LoggingGUI(root)
 guiHandler = logginggui.LoggingGUIHandler(logGUI, controlGUI.status)
-guiHandler.setFormatter(loggingFormatConsole)
+guiHandler.setFormatter(loggingFormatWindow)
 guiHandler.addFilter(loggingFilter)
 logger.addHandler(guiHandler)
 
