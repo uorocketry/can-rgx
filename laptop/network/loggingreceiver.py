@@ -17,7 +17,7 @@ class NetworkError(Exception):
     pass
 
 
-error_manager = ErrorManager(5)
+error_manager = ErrorManager(__name__, 5)
 
 
 class LogRecordConnector(threading.Thread):
