@@ -22,8 +22,7 @@ def receive_from_socket(sock, size):
     buf = b""
 
     while len(buf) != size:
-        read, _, _ = select.select([sock], [], [],
-                                   1)  # Make sure we can read from client. If not, we wait up to 1 sec before timing out
+        read, _, _ = select.select([sock], [], [], 1)  # Make sure we can read from client. If not, we wait up to 1 sec before timing out
 
         if len(read) == 0:
             raise NetworkTimeoutError()
@@ -39,10 +38,10 @@ def receive_from_socket(sock, size):
 
 # TODO: Add better error handling
 def send_message(message):
-    '''
+    """
     Sends the request message to the server. Message should be a dictionary (it will be converted to JSON)
     Return True if the sending was successful
-    '''
+    """
     logger = logging.getLogger(__name__)
     try:
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:

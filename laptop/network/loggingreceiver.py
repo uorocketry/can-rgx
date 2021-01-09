@@ -8,6 +8,7 @@ import threading
 import time
 
 import shared.config as config
+from shared.customlogging.errormanager import ErrorManager
 from shared.customlogging.formatter import CSVFormatter
 from shared.customlogging.handler import MakeFileHandler
 
@@ -16,11 +17,14 @@ class NetworkError(Exception):
     pass
 
 
+error_manager = ErrorManager(__name__, 5)
+
+
 class LogRecordConnector(threading.Thread):
-    '''
+    """
     Simple class that will check if a client has connected to the logging server.
     If no client connects after some time, an alert will be sent to the user.
-    '''
+    """
 
     def __init__(self):
         super().__init__()
@@ -28,21 +32,14 @@ class LogRecordConnector(threading.Thread):
 
     def run(self):
         self._stop_event.clear()
-        logger = logging.getLogger(__name__)
 
-        timeChecked = 0
         while True:
             time.sleep(5)
 
             if self._stop_event.is_set():
                 break
 
-            if timeChecked >= 3:
-                logger.error("RPI is not connecting to the logging server", extra={'errorID': 'loggingConnection'})
-            else:
-                logger.warning("RPI did not connect to the server. Waiting....", extra={'errorID': 'loggingConnection'})
-
-            timeChecked += 1
+            error_manager.escalate("RPI is not connecting to the logging server", "loggingConnection")
 
     def stop(self):
         self._stop_event.set()
@@ -72,7 +69,7 @@ class LogRecordStreamHandler(socketserver.StreamRequestHandler):
     def handle(self):
         global logConnector
         logger = logging.getLogger(__name__)
-        logger.info("Got a connection from {}".format(self.client_address), extra={'errorID': 'loggingConnection'})
+        error_manager.resolve("Got a connection from {}".format(self.client_address), "loggingConnection")
 
         logConnector.stop()  # Stop monitoring for connection
 
@@ -88,12 +85,12 @@ class LogRecordStreamHandler(socketserver.StreamRequestHandler):
 
                 record = logging.makeLogRecord(obj)
                 self.handle_record(record)
+                error_manager.resolve("Network error resolved", "loggingException", False)
             except (NetworkError, ConnectionResetError):
-                logger.warning("Network error. Did the client close the connection?",
-                               extra={'errorID': 'loggingConnection'})
+                error_manager.warning("Network error. Did the client close the connection?", "loggingException")
                 connected = False
             except:
-                logger.exception("Error while receiving log from client", extra={'errorID': 'loggingConnection'})
+                error_manager.error("Error while receiving log from client", "loggingException")
                 connected = False
 
         logConnector = LogRecordConnector()

@@ -92,9 +92,9 @@ class FFTRecord:
 # having any members. The following line tells it to ignore this.
 # pylint: disable=no-member
 class Vibration(SensorLogging):
-    '''
+    """
     Class which interacts with an ADcmXL3021 vibration sensor.
-    '''
+    """
 
     def setup(self):
         # Keep track of raised errors
@@ -129,9 +129,9 @@ class Vibration(SensorLogging):
         self.write_to_register(FFT_AVG1, FFTAverages)
 
     def wait_for_sensor(self):
-        '''
+        """
         Blocks until sensor is ready
-        '''
+        """
         while not GPIO.input(BUSYPin):
             pass
 
@@ -148,13 +148,13 @@ class Vibration(SensorLogging):
             self.errors.remove("PROD_ID_Error")
 
     def check_sensor_connection(self, block):
-        '''
+        """
         Checks if the correct sensor is connected, or if anything is connected
         at all by checking PROD_ID and comparing it to the expected value.
 
         If the returned value is not what is expected, an error will be logged.
         If block is True, this function will block until the correct value is returned.
-        '''
+        """
 
         check = self.read_from_register(PROD_ID)
 
@@ -175,9 +175,9 @@ class Vibration(SensorLogging):
             logger.info("Error cleared: " + message, extra={'errorID': f'VibrationBit{bit}'})
 
     def check_for_errors(self):
-        '''
+        """
         Check for errors and logs it if it is found.
-        '''
+        """
         self.wait_for_sensor()
 
         stat = self.read_from_register(DIAG_STAT)
@@ -191,7 +191,7 @@ class Vibration(SensorLogging):
         self.__check_err_bit(stat, 0, "Power supply < 2.975 V.")
 
     def write_to_register(self, address, data):
-        '''
+        """
         Write to the specified 16 bit wide register.
 
         Parameters
@@ -200,7 +200,7 @@ class Vibration(SensorLogging):
             7 bit address of the register. This is the address of register containing the MSB
         data: int
             16 bit of data to write
-        '''
+        """
         self.wait_for_sensor()
 
         # Send message in two parts, each containing 16 bits.
@@ -210,19 +210,19 @@ class Vibration(SensorLogging):
         self.spi.xfer2([(address + 1) | (1 << 7), (data >> 8) & 0xFF])
 
     def read_from_register(self, address):
-        '''
+        """
         Read from the specified register and return the 16 bits of data.
 
         Parameters
         ----------
         address: int
             7 bit address of the register. This is the address of register containing the MSB
-        
+
         Returns
         -------
         int
             16 bit number of the data returned
-        '''
+        """
         self.wait_for_sensor()
 
         # Send the address to read from, and make sure the write bit is set to 0
@@ -232,9 +232,9 @@ class Vibration(SensorLogging):
         return (rcv[0] << 8) | rcv[1]
 
     def read_fft_data(self):
-        '''
+        """
         Reads from sensor the FFT data and return as a list of FFTRecord
-        '''
+        """
         self.wait_for_sensor()
 
         # Data returned is an array, so combine both elements to get the real number
