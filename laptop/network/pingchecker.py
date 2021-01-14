@@ -20,7 +20,7 @@ class PingChecker(threading.Thread):
 
     def run(self):
         message = {'type': RequestTypes.PING}
-        error_manager = ErrorManager(10)
+        error_manager = ErrorManager(__name__, 10)
         while True:
             confirm = send_message(message)
 
