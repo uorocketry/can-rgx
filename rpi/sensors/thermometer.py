@@ -1,6 +1,7 @@
 import logging
 import threading
 import time
+import concurrent.futures
 
 from rpi.sensors.sensorlogging import SensorLogging
 from rpi.sensors.temp_management import TempManagement

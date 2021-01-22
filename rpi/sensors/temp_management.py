@@ -1,45 +1,37 @@
 import logging
 import RPi.GPIO as GPIO
-import concurrent.futures
+import threading
 import time
 import tkinter
 import matplotlib.pyplot as plt
 import numpy as np
 from scipy.interpolate import BSpline, make_interp_spline
-import rpi.sensors.thermometer
+from rpi.sensors.thermometer import ThermometerList
 
 class GetCurrentTemp():
     def setup(self):
-        #max workers defaults to the number of processors on the machine, multiplied by 5
-        executor = concurrent.futures.ThreadPoolExecutor(max_workers=None)
-        
-        #with ThreadPoolExecutor(max_workers=None) as executor:
-        #ID's of sensors to poll
+        #ID's of sensors to poll - change when lay out finalized.
         BOTTOM_RIGHT = '00000bc743d3' or '1'
-        TOP_LEFT = '00000bc743d3' or '2'
-        CENTER = '00000bc743d3' or '4'
+        TOP_LEFT = '00000bcada' or '2'
 
-        sensor_id = [BOTTOM_RIGHT, TOP_LEFT, CENTER]  
-        total_sensors = 3
+        total_sensors = 2
+        sensor_id_list = [BOTTOM_RIGHT, TOP_LEFT]
 
-        return_data = []
+        #call thread in thermometer.py to retrieve data
+        current_temp_list = threading.Thread(target=ThermometerList.get_temperature_data_list(sensor_id_list))
 
-        #calls target func and sends iterable sensor id, returning values respectively
-        for result in executor.map(Thermolist.pass_value, sensor_id):
-        #for result in executor.map(self.dummy_func, sensor_id):
-            print('temp: {0}'.format(result))
-            return_data.append(result)
+        self.current_avg_temp(current_temp_list, total_sensors)
 
-        sum_list = sum(return_data)
-                    
-        avg_temp = sum_list/total_sensors
-        print(f'Average temp: {avg_temp}')
-    
+    def current_avg_temp(self, current_temps, total_sensors):
+        sum = 0
+        for key,value in current_temps.items():
+            #print(value)
+            sum += value
+
+        avg_temp = sum/total_sensors
+
+        print(f'Current average temperature : {avg_temp}')
         return avg_temp
-
-    def dummy_func(self, id):
-        #this is to emulate the thermometer code
-        return(id*2)
 
 
 class PID():
