@@ -9,7 +9,7 @@ from rpi.sensors.sensorlogging import SensorLogging
 # Only bus 0 is available on RPi
 SPIBus = 0
 # Chip select. Either 0 or 1
-SPIDevice = 0
+SPIDevice = 1
 
 # Sample rate to use. See table 20 in datasheet for details. Note: Table 80 has an error.
 # Sample Rate = 220000 / 2^(AVG_CNT_Bit)
