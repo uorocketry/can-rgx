@@ -13,7 +13,7 @@ SPIDevice = 1
 
 # Sample rate to use. See table 20 in datasheet for details. Note: Table 80 has an error.
 # Sample Rate = 220000 / 2^(AVG_CNT_Bit)
-AVG_CNT_Bit = 0
+AVG_CNT_Bit = 7
 
 # Number of FFT averages to do
 FFTAverages = 1
