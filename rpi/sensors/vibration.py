@@ -245,7 +245,7 @@ class Vibration(SensorLogging):
         combineData = lambda data: (data[0] << 8) | data[1]
 
         # Get the correct value from the data received. This will be in mg
-        getValue = lambda data: (2 ** (combineData(data) / 2048) / FFTAverages) * 0.9535
+        getValue = lambda data: (2 ** ((combineData(data) / 2048)) / FFTAverages) * 0.9535
 
         data = list()
 
