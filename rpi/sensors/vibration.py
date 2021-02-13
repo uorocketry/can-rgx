@@ -1,3 +1,7 @@
+"""
+Code for interacting with the ADCMXL3021BMLZ vibration sensor
+"""
+
 import logging
 import time
 
@@ -11,7 +15,7 @@ SPIBus = 0
 # Chip select. Either 0 or 1
 SPIDevice = 1
 
-# Sample rate to use. See table 20 in datasheet for details. Note: Table 80 has an error.
+# Sample rate to use. See table 20 in datasheet for details. Note: Table 89 has a possible error.
 # Sample Rate = 220000 / 2^(AVG_CNT_Bit)
 AVG_CNT_Bit = 7
 
