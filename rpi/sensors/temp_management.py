@@ -12,7 +12,7 @@ class GetCurrentTemp():
     def setup(self):
         #ID's of sensors to poll - change when lay out finalized.
         BOTTOM_RIGHT = '00000bc743d3' or '1'
-        TOP_LEFT = '00000bcada' or '2'
+        TOP_LEFT = '00000bcada29' or '2'
 
         total_sensors = 2
         sensor_id_list = [BOTTOM_RIGHT, TOP_LEFT]
