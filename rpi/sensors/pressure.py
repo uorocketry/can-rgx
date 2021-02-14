@@ -18,7 +18,7 @@ class Pressure(SensorLogging):
     PRESS_OUT_L = 0x29  # middle part of reference pressure (bits 8-15)
     PRESS_OUT_H = 0x2A  # higher part of reference pressure (bits 16-23)
 
-    def initialize_pressure(self):
+    def setup(self):
         self.bus = smbus.SMBus(1)
         self.bus.write_byte_data(self.address, self.CTRL_REG0, 0b00000010)
         time.sleep(0.5)
@@ -27,7 +27,6 @@ class Pressure(SensorLogging):
         self.bus.write_byte_data(self.address, self.CTRL_REG0, 0b00000000)
         time.sleep(0.5)
 
-    # need to loop over this method
     def read_pressure(self):
         self.bus.write_byte_data(self.address, self.CTRL_REG0, 0b00000011)
         time.sleep(0.1)  # Wait for the measurement to be done
@@ -42,15 +41,15 @@ class Pressure(SensorLogging):
         else:
             filler = 0x00
 
-        # 2s comp notation ">i", ">" says to use Big Endian, and the "i" says it is$
+        # 2s comp notation ">i", ">"  use Big Endian
         pressure = struct.unpack(">i", bytes([filler, data2, data1, data0]))[0]
-        # The LSB represents 1/64 of a Pascal
+        # LSB represents 1/64 of a Pascal
         pressure /= 64
         return pressure
 
     def run(self):
         super().setup_logging("pressure", ["value"])
-        self.initialize_pressure()
+        self.setup()
 
         logger = logging.getLogger(__name__)
 
