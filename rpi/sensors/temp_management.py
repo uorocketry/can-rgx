@@ -2,30 +2,42 @@ import logging
 import RPi.GPIO as GPIO
 import threading
 import time
-import tkinter
-import matplotlib.pyplot as plt
-import numpy as np
-from scipy.interpolate import BSpline, make_interp_spline
-from rpi.sensors.thermometer import ThermometerList
+from multiprocessing import Queue
+#import tkinter
+#import matplotlib.pyplot as plt
+#import numpy as np
+#from scipy.interpolate import BSpline, make_interp_spline
 
 class GetCurrentTemp():
-    def setup(self):
+    def __init__(self):
         #ID's of sensors to poll - change when lay out finalized.
         BOTTOM_RIGHT = '00000bc743d3' or '1'
         TOP_LEFT = '00000bcada29' or '2'
+        from rpi.sensors.thermometer import ThermometerList
 
         total_sensors = 2
         sensor_id_list = [BOTTOM_RIGHT, TOP_LEFT]
 
-        #call thread in thermometer.py to retrieve data
-        current_temp_list = threading.Thread(target=ThermometerList.get_temperature_data_list(sensor_id_list))
+        sensor_val_dict = {'BOTTOM_RIGHT': ''}
 
-        self.current_avg_temp(current_temp_list, total_sensors)
+        #call thread in thermometer.py to retrieve data
+        queue = Queue()
+        current_temp_thread = threading.Thread(target=lambda q, arg : q.put(ThermometerList.get_temperature_data_list(arg)), args=(queue, sensor_id_list))
+        current_temp_thread.start()
+        current_temp_thread.join()
+
+        current_temp_val = queue.get()
+        print(f'current temp: {current_temp_val}')
+
+        #while not queue.empty():
+        #    print(f'current temp: {queue.get()}')
+
+        GetCurrentTemp.current_avg_temp(self, current_temp_val, total_sensors)
 
     def current_avg_temp(self, current_temps, total_sensors):
         sum = 0
         for key,value in current_temps.items():
-            #print(value)
+            print(value)
             sum += value
 
         avg_temp = sum/total_sensors
@@ -146,11 +158,11 @@ class TempManagement():
     PIN = 16
 
     def setup(self):
-        GPIO.setmode(GPIO.BCM)
-        GPIO.setup(self.PIN, GPIO.OUT)
+        #GPIO.setmode(GPIO.BCM)
+        #GPIO.setup(self.PIN, GPIO.OUT)
 
-        self.call_pid(1.2, 1, 0.001, L=10)
-
+        #self.call_pid(1.2, 1, 0.001, L=10)
+        feedback = GetCurrentTemp.__init__(self)
 
     def motor_on(self, pin):
         GPIO.output(pin, GPIO.HIGH)  # Turn relay on
