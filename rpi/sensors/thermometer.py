@@ -1,4 +1,5 @@
 import logging
+import re
 import threading
 import time
 
@@ -8,6 +9,10 @@ from shared.customlogging.errormanager import ErrorManager
 
 thermometer_names = {'00000bc743d3': '1',
                      '00000bcada29': '2'}
+
+
+class InvalidTemperatureDataError(Exception):
+    pass
 
 
 class ThermometerList(threading.Thread):
@@ -33,16 +38,22 @@ class ThermometerList(threading.Thread):
         f.close()
         return lines
 
-    # the read method called from the main class.
+    '''
+    Reads and returns the temperature of this sensor
+    '''
+
     def __read(self):
         lines = self.__read_temp_raw()
-        while lines[0].strip()[-3:] != 'YES':
-            lines = self.__read_temp_raw()
-        equals_pos = lines[1].find('t=')
-        if equals_pos != -1:
-            temp_string = lines[1][equals_pos + 2:]
-            temp_c = float(temp_string) / 1000.0
-            return temp_c
+
+        # The following regex retrieves the result of the CRC check
+        crc = re.match(r'^(?:\w{2} ){9}: crc=\d+ (\w+)$', lines[0]).group(1)
+        if crc != 'YES':
+            raise InvalidTemperatureDataError  # CRC check failed, so the data is not valid
+
+        # Now, this regex retrieves the actual temperature
+        temp = re.match(r'^(?:\w{2} ){9}t=(\d+)$', lines[1]).group(1)
+
+        return float(temp) / 1000.0
 
     def run(self):
         em = ErrorManager(__name__)
@@ -58,8 +69,13 @@ class ThermometerList(threading.Thread):
 
                 # If we had a previous error, resolve it
                 em.resolve("Error has been cleared for {}".format(self.name), self.name, False)
+            except InvalidTemperatureDataError:
+                em.error(
+                    "Temperature sensor {} is returning invalid data. It may have been disconnected.".format(self.name),
+                    self.name)
             except OSError:
-                em.error("Error while reading from {}".format(self.name), self.name)
+                em.error("Error reading from temperature sensor {}. Check if it is connected.".format(self.name),
+                         self.name)
 
     @staticmethod
     def __update_temperature_data(name, data):
