@@ -1,10 +1,10 @@
 import logging
 import threading
 import time
-import concurrent.futures
 
 from rpi.sensors.sensorlogging import SensorLogging
 from rpi.sensors.temp_management import TempManagement
+from shared.customlogging.errormanager import ErrorManager
 
 thermometer_names = {'00000bc743d3': '1',
                      '00000bcada29': '2'}
@@ -45,8 +45,7 @@ class ThermometerList(threading.Thread):
             return temp_c
 
     def run(self):
-        in_error_state = False
-        logger = logging.getLogger(__name__)
+        em = ErrorManager(__name__)
         while True:
             try:
                 temperature = self.__read()
@@ -57,13 +56,10 @@ class ThermometerList(threading.Thread):
                 # Store in static variable so the temperature management can access it
                 ThermometerList.__update_temperature_data(self.name, temperature)
 
-                if in_error_state:
-                    in_error_state = False
-                    logger.warning("Error has been cleared for {}".format(self.name))
+                # If we had a previous error, resolve it
+                em.resolve("Error has been cleared for {}".format(self.name), self.name, False)
             except OSError:
-                if not in_error_state:
-                    logger.exception("Error while reading from {}".format(self.name))
-                    in_error_state = True
+                em.error("Error while reading from {}".format(self.name), self.name)
 
     @staticmethod
     def __update_temperature_data(name, data):
