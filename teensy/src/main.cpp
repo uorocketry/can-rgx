@@ -114,7 +114,10 @@ void loop() {
 }
 
 void printDebugInfo() {
-    delay(5000);
+    static uint32_t lastPrintout;
+    if (millis()-lastPrintout < 5000) { // Do not print if it has not been more than 5 seconds since the last time we did it
+        return;
+    }
     PRINTLN("Motor 1 status");
     PRINT("Moving: ");
     PRINTLN(motor1.isMoving());
@@ -132,4 +135,5 @@ void printDebugInfo() {
     PRINTLN((motor1.isMoving() << 3) | (motor1.isInErrorState() << 2) | (motor2.isMoving() << 1) |
             motor2.isInErrorState(), BIN);
     PRINTLN("\n");
+    lastPrintout = millis(); // Update the last time we printed the debug info
 }
