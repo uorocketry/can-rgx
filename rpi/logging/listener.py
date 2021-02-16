@@ -10,10 +10,10 @@ from shared.customlogging.handler import MakeFileHandler
 
 
 class LoggingListener(multiprocessing.Process):
-    '''
+    """
     Continuously checks the queue and processes any logs inside. Uses logging_config()
     to setup the handling of the logs.
-    '''
+    """
 
     def __init__(self, queue):
         super().__init__()

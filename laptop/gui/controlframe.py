@@ -44,4 +44,8 @@ class MotorFrame(GeneralControlFrame):
 
 class LEDFrame(GeneralControlFrame):
     def __init__(self, parent):
-        super().__init__(parent, "LED", 5)
+        super().__init__(parent, "LED", 7)
+
+    def activate_element(self, index):
+        message = {'type': RequestTypes.CONTROLLED, 'ledNumber': index + 1}
+        send_message(message)

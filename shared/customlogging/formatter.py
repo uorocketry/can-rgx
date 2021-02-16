@@ -4,9 +4,9 @@ import logging
 
 
 class CSVFormatter(logging.Formatter):
-    '''
+    """
     Formats logging messages in csv format
-    '''
+    """
 
     def __init__(self):
         super().__init__()

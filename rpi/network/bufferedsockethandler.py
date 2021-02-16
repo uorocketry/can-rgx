@@ -8,15 +8,15 @@ class BufferedSocketHandler(logging.handlers.SocketHandler):
     def __init__(self, host, port):
         super().__init__(host, port)
 
-        self.buffer = deque()
+        self.buffer = deque(maxlen=1000)  # TODO: Review if this maximum length is the ideal one
 
     def emit(self, record):
-        '''
+        """
         This method is called when the handler should emit the record. By default,
         SocketHandler will silently drop a message if it cannot send it. Because this
-        is not desired in our case, we will use a queue that will act as a buffer if 
+        is not desired in our case, we will use a queue that will act as a buffer if
         the message is not sent
-        '''
+        """
         self.buffer.append(record)
         while len(self.buffer) != 0:
             nextRecord = self.buffer.popleft()
