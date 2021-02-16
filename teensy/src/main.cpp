@@ -94,7 +94,7 @@ void sendI2CState() {
     uint8_t state = 0;
     if (i2CSendingValue == I2CSendingValue::MOTOR) {
         state = (motor1.isMoving() << 3) | (motor1.isInErrorState() << 2) | (motor2.isMoving() << 1) |
-        motor2.isInErrorState();
+                motor2.isInErrorState();
     } else if (i2CSendingValue == I2CSendingValue::LED) {
         for (auto i : PHOTODIODE_PORTS) {
             // Read the photodiode value
@@ -147,7 +147,8 @@ void loop() {
 
 void printDebugInfo() {
     static uint32_t lastPrintout;
-    if (millis()-lastPrintout < 5000) { // Do not print if it has not been more than 5 seconds since the last time we did it
+    if (millis() - lastPrintout <
+        5000) { // Do not print if it has not been more than 5 seconds since the last time we did it
         return;
     }
     PRINTLN("Motor 1 status");
