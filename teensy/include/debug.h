@@ -8,8 +8,8 @@
 #define PRINTLN(args...) Serial.println(args)
 #define PRINT(args...) Serial.print(args)
 #else
-#define PRINTLN(x)
-#define PRINT(x)
+#define PRINTLN(x...)
+#define PRINT(x...)
 #endif
 
 #endif //ARDUINO_DEBUG_H

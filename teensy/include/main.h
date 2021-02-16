@@ -8,4 +8,6 @@ void receiveI2CEvent(int numBytes);
 
 void sendI2CState();
 
+void printDebugInfo();
+
 #endif //ARDUINO_MAIN_H
