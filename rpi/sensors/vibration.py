@@ -1,26 +1,31 @@
+"""
+Code for interacting with the ADCMXL3021BMLZ vibration sensor
+"""
+
 import logging
-import spidev
-import RPi.GPIO as GPIO
 import time
+
+import RPi.GPIO as GPIO
+import spidev
 
 from rpi.sensors.sensorlogging import SensorLogging
 
-#Only bus 0 is available on RPi
+# Only bus 0 is available on RPi
 SPIBus = 0
-#Chip select. Either 0 or 1
-SPIDevice = 0
+# Chip select. Either 0 or 1
+SPIDevice = 1
 
-#Sample rate to use. See table 20 in datasheet for details. Note: Table 80 has an error.
-#Sample Rate = 220000 / 2^(AVG_CNT_Bit)
-AVG_CNT_Bit = 0
+# Sample rate to use. See table 20 in datasheet for details. Note: Table 89 has a possible error.
+# Sample Rate = 220000 / 2^(AVG_CNT_Bit)
+AVG_CNT_Bit = 7
 
-#Number of FFT averages to do
+# Number of FFT averages to do
 FFTAverages = 1
 
-#Pin connected to the BUSY output
+# Pin connected to the BUSY output
 BUSYPin = 24
 
-#Registers from the sensor
+# Registers from the sensor
 PAGE_ID = 0x00
 TEMP_OUT = 0x02
 SUPPLY_OUT = 0x04
@@ -78,34 +83,37 @@ FUND_FREQ = 0x7A
 FLASH_CNT_L = 0x7C
 FLASH_CNT_U = 0x7E
 
+
 class FFTRecord:
-    def __init__(self, lowestfrequency, binsize, axis, data):
+    def __init__(self, lowestfrequency, binsize, x_data, y_data, z_data):
         self.lowestfrequency = lowestfrequency
         self.binsize = binsize
-        self.axis = axis
-        self.data = data # This is in mg
+        self.x_data = x_data
+        self.y_data = y_data
+        self.z_data = z_data
 
 
-#If using Pylint in IDE, for some reason warns about GPIO not
-#having any members. The following line tells it to ignore this.
+# If using Pylint in IDE, for some reason warns about GPIO not
+# having any members. The following line tells it to ignore this.
 # pylint: disable=no-member
 class Vibration(SensorLogging):
-    '''
+    """
     Class which interacts with an ADcmXL3021 vibration sensor.
-    '''
+    """
+
     def setup(self):
-        #Keep track of raised errors
+        # Keep track of raised errors
         self.errors = set()
 
         self.spi = spidev.SpiDev()
         self.spi.open(SPIBus, SPIDevice)
 
-        #Configure the settings to communicate with the device
+        # Configure the settings to communicate with the device
         self.spi.mode = 0b11
-        self.spi.max_speed_hz = 14000000 #14MHz
+        self.spi.max_speed_hz = 14000000  # 14MHz
         self.spi.lsbfirst = False
 
-        #Configure BUSY pin
+        # Configure BUSY pin
         GPIO.setmode(GPIO.BCM)
         GPIO.setwarnings(False)
 
@@ -113,45 +121,45 @@ class Vibration(SensorLogging):
 
         self.write_to_register(PAGE_ID, 0x0000)
 
-        #Check if the sensor is connected, blocking here until it is
+        # Check if the sensor is connected, blocking here until it is
         self.check_sensor_connection(True)
 
-        #Set Window settings to Hanning, use SR0, record mode to MFFT
+        # Set Window settings to Hanning, use SR0, record mode to MFFT
         self.write_to_register(REC_CTRL, 0x1100)
 
-        #Set sample rate. We only use SR0, and don't care about the rest
+        # Set sample rate. We only use SR0, and don't care about the rest
         self.write_to_register(AVG_CNT, AVG_CNT_Bit)
 
-        #Spectral averaging. Again, only care about SR0
+        # Spectral averaging. Again, only care about SR0
         self.write_to_register(FFT_AVG1, FFTAverages)
 
     def wait_for_sensor(self):
-        '''
+        """
         Blocks until sensor is ready
-        '''
+        """
         while not GPIO.input(BUSYPin):
             pass
 
     def __check_sensor(self, check):
         if check != 0x0BCD and "PROD_ID_Error" not in self.errors:
             logger = logging.getLogger(__name__)
-            logger.error(f"PROD_ID is not the expected value: got {hex(check)} instead of 0x0BCD. Is the sensor plugged?" \
+            logger.error(
+                f"PROD_ID is not the expected value: got {hex(check)} instead of 0x0BCD. Is the sensor plugged?"
                 , extra={'errorID': f'VibrationPROD_ID'})
             self.errors.add("PROD_ID_Error")
         elif check == 0x0BCD and "PROD_ID_Error" in self.errors:
             logger = logging.getLogger(__name__)
-            logger.info(f"Error cleared, PROD_ID is now the expected value." \
-                , extra={'errorID': f'VibrationPROD_ID'})
+            logger.info(f"Error cleared, PROD_ID is now the expected value.", extra={'errorID': f'VibrationPROD_ID'})
             self.errors.remove("PROD_ID_Error")
 
     def check_sensor_connection(self, block):
-        '''
+        """
         Checks if the correct sensor is connected, or if anything is connected
         at all by checking PROD_ID and comparing it to the expected value.
 
         If the returned value is not what is expected, an error will be logged.
         If block is True, this function will block until the correct value is returned.
-        '''
+        """
 
         check = self.read_from_register(PROD_ID)
 
@@ -170,11 +178,11 @@ class Vibration(SensorLogging):
             logger = logging.getLogger(__name__)
             self.errors.remove(bit)
             logger.info("Error cleared: " + message, extra={'errorID': f'VibrationBit{bit}'})
-    
+
     def check_for_errors(self):
-        '''
+        """
         Check for errors and logs it if it is found.
-        '''
+        """
         self.wait_for_sensor()
 
         stat = self.read_from_register(DIAG_STAT)
@@ -188,7 +196,7 @@ class Vibration(SensorLogging):
         self.__check_err_bit(stat, 0, "Power supply < 2.975 V.")
 
     def write_to_register(self, address, data):
-        '''
+        """
         Write to the specified 16 bit wide register.
 
         Parameters
@@ -197,82 +205,88 @@ class Vibration(SensorLogging):
             7 bit address of the register. This is the address of register containing the MSB
         data: int
             16 bit of data to write
-        '''
+        """
         self.wait_for_sensor()
 
-        #Send message in two parts, each containing 16 bits.
-        #First bit is 1 for the write bit, followed by the 7 bit address
-        #This is followed by the data, which has been splited accross the two messages
+        # Send message in two parts, each containing 16 bits.
+        # First bit is 1 for the write bit, followed by the 7 bit address
+        # This is followed by the data, which has been splited accross the two messages
         self.spi.xfer2([address | (1 << 7), data & 0xFF])
-        self.spi.xfer2([(address+1) | (1 << 7), (data >> 8) & 0xFF])
+        self.spi.xfer2([(address + 1) | (1 << 7), (data >> 8) & 0xFF])
 
     def read_from_register(self, address):
-        '''
+        """
         Read from the specified register and return the 16 bits of data.
 
         Parameters
         ----------
         address: int
             7 bit address of the register. This is the address of register containing the MSB
-        
+
         Returns
         -------
         int
             16 bit number of the data returned
-        '''
+        """
         self.wait_for_sensor()
 
-        #Send the address to read from, and make sure the write bit is set to 0
+        # Send the address to read from, and make sure the write bit is set to 0
         self.spi.xfer2([address & ~(1 << 7), 0x00])
 
         rcv = self.spi.readbytes(2)
         return (rcv[0] << 8) | rcv[1]
 
     def read_fft_data(self):
-        '''
+        """
         Reads from sensor the FFT data and return as a list of FFTRecord
-        '''
+        """
         self.wait_for_sensor()
-        
-        #Data returned is an array, so combine both elements to get the real number
-        combineData = lambda data : (data[0] << 8) | data[1]
-        
-        #Get the correct value from the data received. This will be in mg
-        getValue = lambda data : (2**(combineData(data)/2048)/FFTAverages) * 0.9535
+
+        # Data returned is an array, so combine both elements to get the real number
+        combineData = lambda data: (data[0] << 8) | data[1]
+
+        # Get the correct value from the data received. This will be in mg
+        getValue = lambda data: (2 ** ((combineData(data) / 2048)) / FFTAverages) * 0.9535
 
         data = list()
-        
-        samplerate = 220000/2**AVG_CNT_Bit
-        binsize = samplerate/4096
+
+        samplerate = 220000 / 2 ** AVG_CNT_Bit
+        binsize = samplerate / 4096
 
         axis = [X_BUF, Y_BUF, Z_BUF]
-        axisName = ['x', 'y', 'z']
+        axis_data = [list(), list(), list()]
 
         self.spi.xfer2([axis[0] & ~(1 << 7), 0x00])
         for n, a in enumerate(axis):
             for i in range(2048):
                 if i != 2047:
-                    rcv = self.spi.xfer2([a & ~(1 << 7), 0x00]) #Remember that any data requested will only arrive at the next spi transaction
+                    rcv = self.spi.xfer2([a & ~(1 << 7),
+                                          0x00])  # Remember that any data requested will only arrive at the next spi transaction
                 elif n < 2:
-                    rcv = self.spi.xfer2([axis[n+1] & ~(1 << 7), 0x00]) #Request right away for the next axis
+                    rcv = self.spi.xfer2([axis[n + 1] & ~(1 << 7), 0x00])  # Request right away for the next axis
                 else:
-                    rcv = self.spi.xfer2([0x00, 0x00]) #If we are at the very end, don't request anything
+                    rcv = self.spi.xfer2([0x00, 0x00])  # If we are at the very end, don't request anything
 
-                data.append(FFTRecord(binsize*i, binsize, axisName[n], getValue(rcv)))
-        
+                axis_data[n].append(getValue(rcv))
+
+        # Combine the data from all axis together
+        for i in range(2048):
+            data.append(FFTRecord(binsize * i, binsize, axis_data[0][i], axis_data[1][i], axis_data[2][i]))
+
         return data
 
     def run(self):
-        super().setup_logging("vibration", ["axis", "lowestfrequency (Hz)", "binsize (Hz)", "value (mg)"])
+        super().setup_logging("vibration",
+                              ["binsize (Hz)", "lowestfrequency (Hz)", "value x (mg)", "value y (mg)", "value z (mg)"])
         self.setup()
         while True:
             self.check_sensor_connection(True)
             self.check_for_errors()
 
-            self.write_to_register(GLOB_CMD, 1<<11) #Start a measurement
+            self.write_to_register(GLOB_CMD, 1 << 11)  # Start a measurement
             self.wait_for_sensor()
 
             data = self.read_fft_data()
-            now = time.time()*1000
+            now = time.time() * 1000
             for i in data:
-                self.sensorlogger.info([now, i.axis, i.lowestfrequency, i.binsize, i.data])
+                self.sensorlogger.info([now, i.binsize, i.lowestfrequency, i.x_data, i.y_data, i.z_data])

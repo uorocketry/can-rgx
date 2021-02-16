@@ -1,8 +1,5 @@
-import tkinter as tk
-import logging
-
-from laptop.gui.statusframe import StatusFrame
 from laptop.gui.controlframe import MotorFrame, LEDFrame
+from laptop.gui.statusframe import StatusFrame
 
 
 class ControlGUI:
@@ -20,11 +17,7 @@ class ControlGUI:
         self.motor.grid(row=2, sticky="nsew")
 
         master.grid_columnconfigure(0, weight=1)
-        
+
         master.grid_rowconfigure(0, weight=1)
         master.grid_rowconfigure(1, weight=1)
         master.grid_rowconfigure(2, weight=1)
-
-
-
-

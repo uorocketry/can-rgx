@@ -1,17 +1,20 @@
-import multiprocessing
 import logging
+import logging.handlers
+import multiprocessing
 import sys
 
-from shared.customlogging.handler import MakeFileHandler
-from shared.customlogging.filter import SensorFilter
-from rpi.network.bufferedsockethandler import BufferedSocketHandler
 import shared.config as config
+from rpi.network.bufferedsockethandler import BufferedSocketHandler
+from shared.customlogging.filter import SensorFilter
+from shared.customlogging.handler import MakeFileHandler
+
 
 class LoggingListener(multiprocessing.Process):
-    '''
+    """
     Continuously checks the queue and processes any logs inside. Uses logging_config()
     to setup the handling of the logs.
-    '''
+    """
+
     def __init__(self, queue):
         super().__init__()
         self.queue = queue
@@ -24,6 +27,7 @@ class LoggingListener(multiprocessing.Process):
                 logger = logging.getLogger(record.name)
                 logger.handle(record)
 
+
 def logging_config():
     logger = logging.getLogger()
     logger.setLevel(logging.INFO)
@@ -31,13 +35,13 @@ def logging_config():
     loggingFormat = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
     loggingFilter = SensorFilter()
 
-    #Logging to console
+    # Logging to console
     consoleHandler = logging.StreamHandler(sys.stdout)
     consoleHandler.setFormatter(loggingFormat)
     consoleHandler.addFilter(loggingFilter)
     logger.addHandler(consoleHandler)
 
-    #Logging to file. A new file is created each run, with the name being the current date and time
+    # Logging to file. A new file is created each run, with the name being the current date and time
     fileHandler = MakeFileHandler('rpi', 'main')
     fileHandler.setFormatter(loggingFormat)
     fileHandler.addFilter(loggingFilter)
