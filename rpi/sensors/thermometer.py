@@ -46,7 +46,7 @@ class ThermometerList(threading.Thread):
         lines = self.__read_temp_raw()
 
         # The following regex retrieves the result of the CRC check
-        crc = re.match(r'^(?:\w{2} ){9}: crc=\d+ (\w+)$', lines[0]).group(1)
+        crc = re.match(r'^(?:\w{2} ){9}: crc=\w+ (\w+)$', lines[0]).group(1)
         if crc != 'YES':
             raise InvalidTemperatureDataError  # CRC check failed, so the data is not valid
 
