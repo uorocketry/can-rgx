@@ -31,12 +31,12 @@ class GetCurrentTemp():
 
         #while not queue.empty():
         #    print(f'current temp: {queue.get()}')
-
         GetCurrentTemp.current_avg_temp(self, current_temp_val, total_sensors)
 
     def current_avg_temp(self, current_temps, total_sensors):
         sum = 0
         for key,value in current_temps.items():
+            #write try, except statement to handle 'none' passed in for cases where sensor is disconnected
             print(value)
             sum += value
 
@@ -158,10 +158,11 @@ class TempManagement():
     PIN = 16
 
     def setup(self):
+        #uncomment following three lines and delete fourth when relay is attached to pi
         #GPIO.setmode(GPIO.BCM)
         #GPIO.setup(self.PIN, GPIO.OUT)
-
         #self.call_pid(1.2, 1, 0.001, L=10)
+
         feedback = GetCurrentTemp.__init__(self)
 
     def motor_on(self, pin):
@@ -183,7 +184,7 @@ class TempManagement():
 
         while True:
             #get feedback aka avg (current) temperature
-            feedback = GetCurrentTemp.setup()
+            feedback = GetCurrentTemp.__init__(self)
             pid.update(feedback)
             output = pid.output
             

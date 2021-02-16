@@ -93,8 +93,6 @@ class ThermometerList(threading.Thread):
         None will be the value for that sensor
         """
         with ThermometerList.thermometer_data_lock:
-            print (dict((k, ThermometerList.thermometer_data[k] if k in ThermometerList.thermometer_data else None)
-                        for k in names))
             return dict((k, ThermometerList.thermometer_data[k] if k in ThermometerList.thermometer_data else None)
                         for k in names)
 

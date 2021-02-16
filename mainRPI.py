@@ -3,7 +3,7 @@ import multiprocessing
 
 from rpi.logging.listener import LoggingListener
 from rpi.network.server import Server
-from rpi.sensors.pressure import Pressure
+#from rpi.sensors.pressure import Pressure
 from rpi.sensors.thermometer import Thermometer
 from rpi.sensors.vibration import Vibration
 from shared.customlogging.handler import CustomQueueHandler
