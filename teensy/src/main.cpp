@@ -18,12 +18,23 @@ const uint8_t MOTOR1_LOWER_LIMIT = 0;
 const uint8_t MOTOR2_TOP_LIMIT = 0;
 const uint8_t MOTOR2_LOWER_LIMIT = 0;
 
+// Ports for the photodiodes. On a I2C read, the data will be sent in the listed order.
+const uint8_t PHOTODIODE_PORTS[] = {
+        1, // MSB
+        1,
+        1,
+        1, // LSB
+};
+
 // Communication settings
 const uint8_t I2C_ADDRESS = 0x2;
 const uint64_t SERIAL_RATE = 9600;
 
 // How long to wait in milliseconds before stopping a motor automatically
 const volatile uint16_t MOTOR_TIMEOUT_MILLI = 10 * 1000;
+
+// Store what we should send to the Pi for the i2C value
+I2CSendingValue i2CSendingValue = I2CSendingValue::MOTOR;
 
 Motor motor1(MOTOR1_EN, MOTOR1_IN1, MOTOR1_IN2);
 Motor motor2(MOTOR2_EN, MOTOR2_IN1, MOTOR2_IN2);
@@ -39,27 +50,38 @@ void setup() {
 #endif
 }
 
-// This function expects to receive two bits from I2C. The MSB represents the motorNumber (0 for motor 1 and 1 for motor 2)
-// The LSB represents the motor direction. 0 is UP, 1 is DOWN
+/**
+ * This function expects to receive three bits from I2C.
+ * If the 1st bit (MSB) is 1, the action will be a motor control.
+ *  2nd bit: Represents the motorNumber (0 for motor 1 and 1 for motor 2)
+ *  3rd bit: Represents the motor direction. 0 is UP, 1 is DOWN.
+ * If the 1st bit is 0, it will simply change the sent output during a I2C read.
+ *  2nd bit: Ignored.
+ *  3rd bit: 0 will send motor state. 1 will send LED state
+ */
 void receiveI2CEvent(int) {
     while (Wire.available()) {
         uint8_t data = Wire.read();
 
-        uint8_t motorNumber = (data >> 1) & 1;
-        auto motorDirection = static_cast<MotorDirection>(data & 1);
+        if ((data >> 2) & 1) { // This is a motor control event
+            uint8_t motorNumber = (data >> 1) & 1;
+            auto motorDirection = static_cast<MotorDirection>(data & 1);
 
-        if (motorNumber == 0) {
-            // Only start the motor if the limit is not pressed
-            if (!(motorDirection == MotorDirection::UP && digitalRead(MOTOR1_TOP_LIMIT) == LOW) &&
-                !(motorDirection == MotorDirection::DOWN && digitalRead(MOTOR1_LOWER_LIMIT) == LOW)) {
-                motor1.startMotor(motorDirection);
+            if (motorNumber == 0) {
+                // Only start the motor if the limit is not pressed
+                if (!(motorDirection == MotorDirection::UP && digitalRead(MOTOR1_TOP_LIMIT) == LOW) &&
+                    !(motorDirection == MotorDirection::DOWN && digitalRead(MOTOR1_LOWER_LIMIT) == LOW)) {
+                    motor1.startMotor(motorDirection);
+                }
+            } else {
+                // Only start the motor if the limit is not pressed
+                if (!(motorDirection == MotorDirection::UP && digitalRead(MOTOR2_TOP_LIMIT) == LOW) &&
+                    !(motorDirection == MotorDirection::DOWN && digitalRead(MOTOR2_LOWER_LIMIT) == LOW)) {
+                    motor2.startMotor(motorDirection);
+                }
             }
-        } else {
-            // Only start the motor if the limit is not pressed
-            if (!(motorDirection == MotorDirection::UP && digitalRead(MOTOR2_TOP_LIMIT) == LOW) &&
-                !(motorDirection == MotorDirection::DOWN && digitalRead(MOTOR2_LOWER_LIMIT) == LOW)) {
-                motor2.startMotor(motorDirection);
-            }
+        } else { // Change what a i2c read will send
+            i2CSendingValue = static_cast<I2CSendingValue>(data & 1);
         }
     }
 }
@@ -69,9 +91,19 @@ void receiveI2CEvent(int) {
 // The two most significant bits are for motor 1, the other two LSB are for motor 2.
 // For example, if motor 1 is not moving and in an error state, and motor 2 is moving and not in error state, 0110 will be sent
 void sendI2CState() {
-    uint8_t state = (motor1.isMoving() << 3) | (motor1.isInErrorState() << 2) | (motor2.isMoving() << 1) |
-                    motor2.isInErrorState();
+    uint8_t state = 0;
+    if (i2CSendingValue == I2CSendingValue::MOTOR) {
+        state = (motor1.isMoving() << 3) | (motor1.isInErrorState() << 2) | (motor2.isMoving() << 1) |
+        motor2.isInErrorState();
+    } else if (i2CSendingValue == I2CSendingValue::LED) {
+        for (auto i : PHOTODIODE_PORTS) {
+            // Read the photodiode value
+            auto value = digitalRead(i);
 
+            // Add the value to the state
+            state = (state << 1) | (value & 1);
+        }
+    }
     Wire.write(state);
 }
 

@@ -10,4 +10,9 @@ void sendI2CState();
 
 void printDebugInfo();
 
+enum I2CSendingValue {
+    MOTOR = 0x0,
+    LED = 0x1,
+};
+
 #endif //ARDUINO_MAIN_H
