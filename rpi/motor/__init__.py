@@ -3,9 +3,7 @@ import threading
 import time
 from enum import IntEnum
 
-from smbus import SMBus
-
-ARDUINO_ADDRESS = 2
+from rpi.teensy import Teensy
 
 
 class MotorDirection(IntEnum):
@@ -15,21 +13,21 @@ class MotorDirection(IntEnum):
 
 class MotorControl:
     def __init__(self):
-        self.bus = SMBus(1)
+        self.teensy = Teensy()
 
     def __start_motor(self, motor_number, motor_direction):
         logger = logging.getLogger(__name__)
         logger.info("Starting motor {}".format(motor_number + 1))
-        self.bus.write_byte(ARDUINO_ADDRESS, (motor_number << 1) | motor_direction)
+        self.teensy.activate_motor(motor_number, motor_direction)
 
         status = 0b11
         while (status >> 1) == 1:  # Wait here until the motor stops running
             time.sleep(1)
 
             if motor_number == 0:
-                status = self.bus.read_byte(ARDUINO_ADDRESS) >> 2
+                status = self.teensy.get_motor_state() >> 2
             else:
-                status = self.bus.read_byte(ARDUINO_ADDRESS)
+                status = self.teensy.get_motor_state()
 
         logger.info("Motor {} stopped".format(motor_number + 1))
 
