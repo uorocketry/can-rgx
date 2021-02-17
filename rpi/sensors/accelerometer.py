@@ -38,6 +38,7 @@ class Accelerometer():
     READ_BIT = 0x01
     WRITE_BIT = 0x00
     DUMMY_BYTE = 0x00
+    SEQUENTIAL_READ_BYTE = 0b11
 
     # Conversion factors
     CONV_FULLR = 3.9  # applicable for all gs
@@ -52,10 +53,18 @@ class Accelerometer():
         self.spi.max_speed_hz = self.SPI_MAX_CLOCK_HZ
         self.spi.mode = self.SPI_MODE
 
+        self.get_device_id()
         self.set_measure_range(measure_range)
         self.set_fifo()
         self.set_bw_rate()
         self.enable_measure_mode()
+
+    def get_device_id(self):
+        dev_id = self.xfer_read_byte(0x00, 1)
+        address_list = [0x00, 0x1D, 0x1E]
+        multibyte_test = self.xfer_read_multiple_bytes_sequential(start_address=0x00, n=3)
+        print(f"Device ID : {dev_id}")
+        print(f"mutlibyte read test : {multibyte_test}")
 
     def set_measure_range(self, measure_range):
         """Function to set range and resolution"""
@@ -79,22 +88,29 @@ class Accelerometer():
 
     def xfer_read_byte(self, address, n):
         """"FIX THIS  'list' and 'int' error SPI function to read bytes, set MSB high to read"""
-        self.spi.xfer2([(address | self.READ_BIT << 7), 0x00])
-        retval = self.spi.readbytes(n)
+        retval = self.spi.xfer2([(address | self.READ_BIT << 7), 0x00])[1:]
         return retval
 
     def xfer_read_multiple_bytes(self, data_address_list):
         spi_read = []
         for address in data_address_list:
-            spi_read.append(address << 1 | self.READ_BIT)
+            spi_read.append(address | self.READ_BIT << 7)
         spi_read.append(self.DUMMY_BYTE)
         retlist = self.spi.xfer2(spi_read)[1:]
         #retlist = self.spi.readbytes(12)
         return retlist
 
+    def xfer_read_multiple_bytes_sequential(self, start_address, n):
+        spi_read = [start_address | (self.SEQUENTIAL_READ_BYTE << 6)]
+        for _ in range(n):
+            spi_read.append(self.DUMMY_BYTE)
+        retlist = self.spi.xfer2(spi_read)[1:]
+        # retlist = self.spi.readbytes(12)
+        return retlist
+
     def get_acceleration_data(self):
         data_address_list = [self.DATA_X0, self.DATA_X1, self.DATA_Y0, self.DATA_Y1, self.DATA_Z0, self.DATA_Z1]
-        raw_axes = self.xfer_read_multiple_bytes(data_address_list)
+        raw_axes = self.xfer_read_multiple_bytes_sequential(start_address=self.DATA_X0, n=6)
         print(raw_axes)
 
         x_data = raw_axes[0:2]
