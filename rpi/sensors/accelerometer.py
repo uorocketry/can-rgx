@@ -84,7 +84,7 @@ class Accelerometer():
 
     def xfer_write_byte(self, address, value):
         """SPI function to write bytes, set MSB low"""
-        self.spi.xfer2([(address | self.WRITE_BIT << 7), value & 0XFF])
+        self.spi.xfer2([(address & ~(1 << 7)), value & 0XFF])
 
     def xfer_read_byte(self, address, n):
         """"FIX THIS  'list' and 'int' error SPI function to read bytes, set MSB high to read"""
