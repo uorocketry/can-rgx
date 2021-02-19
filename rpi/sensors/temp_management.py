@@ -11,26 +11,24 @@ from multiprocessing import Queue
 class GetCurrentTemp():
     def __init__(self):
         #ID's of sensors to poll - change when lay out finalized.
-        BOTTOM_RIGHT = '00000bc743d3' or '1'
-        TOP_LEFT = '00000bcada29' or '2'
+        BOTTOM_RIGHT = '28-00000bc725ef' or '1'
+        TOP_LEFT = '28-00000bc743d3' or '2'
+        CENTER = '28-00000bc74b3b' or '3'
+        CENTER_LEFT = '28-00000bca5780' or '4'
+
         from rpi.sensors.thermometer import ThermometerList
+        total_sensors = 4
+        sensor_id_list = [BOTTOM_RIGHT, TOP_LEFT, CENTER, CENTER_LEFT]
 
-        total_sensors = 2
-        sensor_id_list = [BOTTOM_RIGHT, TOP_LEFT]
-
-        sensor_val_dict = {'BOTTOM_RIGHT': ''}
-
-        #call thread in thermometer.py to retrieve data
+        #call thermometer thread to retrieve current temperature
         queue = Queue()
         current_temp_thread = threading.Thread(target=lambda q, arg: q.put(ThermometerList.get_temperature_data_list(arg)), args=(queue, sensor_id_list))
         current_temp_thread.start()
         current_temp_thread.join()
 
         current_temp_val = queue.get()
-        print(f'current temp: {current_temp_val}')
+        print(f'Current temperature retrieved from thermometer thread: {current_temp_val}')
 
-        #while not queue.empty():
-        #    print(f'current temp: {queue.get()}')
         GetCurrentTemp.current_avg_temp(self, current_temp_val, total_sensors)
 
 
@@ -54,16 +52,13 @@ class GetCurrentTemp():
 
 class PID():
     def __init__(self, P, I, D, current_time=None):
-
         #pid initialization
         self.Kp = P
         self.Ki = I
         self.Kd = D
-
         self.sample_time = 0.00
         self.current_time = current_time if current_time is not None else time.time()
         self.last_time = self.current_time
-
         self.clear()
 
     def clear(self):
@@ -74,11 +69,9 @@ class PID():
         self.ITerm = 0.0
         self.DTerm = 0.0
         self.last_error = 0.0
-
         #windup guard
         self.int_error = 0.0
         self.windup_guard = 20.0
-
         self.output = 0.0
     
     def update(self, feedback_value, current_time=None):
@@ -97,7 +90,6 @@ class PID():
         }
         """
         self.error = self.SetPoint - feedback_value    # desired - actual
-
         self.current_time = current_time if current_time is not None else time.time()
         delta_time = self.current_time - self.last_time
         delta_error = error - self.last_error
@@ -159,7 +151,6 @@ class PID():
 
 
 class TempManagement():
-    
     #relay pin on pi
     PIN = 16
 
@@ -168,7 +159,6 @@ class TempManagement():
         #GPIO.setmode(GPIO.BCM)
         #GPIO.setup(self.PIN, GPIO.OUT)
         #self.call_pid(1.2, 1, 0.001, L=10)
-
         feedback = GetCurrentTemp.__init__(self)
 
     def motor_on(self, pin):
@@ -180,7 +170,6 @@ class TempManagement():
 
     def call_pid(self, P, I, D):
         pid = PID(P, I, D)
-
         pid.SetPoint = 35    #desired temp. val
         pid.setSampleTime(0.05)
 
