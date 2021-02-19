@@ -126,6 +126,10 @@ class Accelerometer():
         z_data = (z_data[1] << 8) | z_data[0]
         z_data >> 4
 
+        print(f"x: {x_data}")
+        print(f"y : {y_data}")
+        print(f"z : {z_data}")
+
         # Apply 2s comp
         if x_data & 0x80000 == 0x80000:
             x_data = ~x_data + 1
