@@ -22,7 +22,7 @@ class GetCurrentTemp():
 
         #call thread in thermometer.py to retrieve data
         queue = Queue()
-        current_temp_thread = threading.Thread(target=lambda q, arg : q.put(ThermometerList.get_temperature_data_list(arg)), args=(queue, sensor_id_list))
+        current_temp_thread = threading.Thread(target=lambda q, arg: q.put(ThermometerList.get_temperature_data_list(arg)), args=(queue, sensor_id_list))
         current_temp_thread.start()
         current_temp_thread.join()
 
@@ -33,12 +33,18 @@ class GetCurrentTemp():
         #    print(f'current temp: {queue.get()}')
         GetCurrentTemp.current_avg_temp(self, current_temp_val, total_sensors)
 
+
     def current_avg_temp(self, current_temps, total_sensors):
         sum = 0
         for key,value in current_temps.items():
-            #write try, except statement to handle 'none' passed in for cases where sensor is disconnected
-            print(value)
-            sum += value
+            #handle 'none' passed in for cases where sensor is disconnected
+            try:
+                print(value)
+                sum += value
+            except(TypeError):
+                print(f"Not all sensors are providing acceptable temperature data. "
+                      f"Cannot perform designated operation on sensor: {key} | value: {value}.")
+                pass
 
         avg_temp = sum/total_sensors
 

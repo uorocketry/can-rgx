@@ -19,7 +19,8 @@ if __name__ == '__main__':
     root.setLevel(logging.INFO)
 
     # Next lines starts all of the other processes and monitor them in case they quit
-    processClassesList = [Server, Vibration, Thermometer, Pressure]
+    #processClassesList = [Server, Vibration, Thermometer, Pressure]
+    processClassesList = [Thermometer]
     processes = dict()
 
     for processClass in processClassesList:
