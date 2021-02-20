@@ -103,13 +103,16 @@ class ThermometerList(threading.Thread):
     def get_temperature_data_list(names):
         """
         Return the temperature data of a list of sensors.
-        :param names: A list of all the sensor names to get the data from
+        :param names: A list of all the sensor names (string) to get the data from
         :return: A map with the sensor name as the key and the temperature as the value. If a sensor doesn't exist,
         None will be the value for that sensor
         """
         with ThermometerList.thermometer_data_lock:
+            print(dict((k, ThermometerList.thermometer_data[k] if k in ThermometerList.thermometer_data else None)
+                        for k in names))
             return dict((k, ThermometerList.thermometer_data[k] if k in ThermometerList.thermometer_data else None)
                         for k in names)
+
 
 
 class Thermometer(SensorLogging):
