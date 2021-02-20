@@ -41,7 +41,7 @@ class GetCurrentTemp():
                 sum += value
             except(TypeError):
                 print(f"Not all sensors are providing acceptable temperature data. "
-                      f"Cannot perform designated operation on sensor: {key} | value: {value}.")
+                      f"Cannot perform designated operation on sensor: ({key} | value: '{value}') - Discarded")
                 pass
 
         avg_temp = sum/total_sensors
