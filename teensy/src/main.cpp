@@ -45,6 +45,11 @@ void setup() {
     Wire.onReceive(receiveI2CEvent);
     Wire.onRequest(sendI2CState);
 
+    // Enable the internal pulldown resistors for the photodiodes
+    for (auto i : PHOTODIODE_PORTS) {
+        pinMode(i, INPUT_PULLDOWN);
+    }
+
 #ifdef DEBUG
     Serial.begin(SERIAL_RATE);
 #endif
