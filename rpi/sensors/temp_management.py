@@ -3,10 +3,10 @@ import RPi.GPIO as GPIO
 import threading
 import time
 from multiprocessing import Queue
-#import tkinter
-#import matplotlib.pyplot as plt
+from itertools import count
+import matplotlib.pyplot as plt
+from matplotlib.animation import FuncAnimation
 #import numpy as np
-#from scipy.interpolate import BSpline, make_interp_spline
 
 class GetCurrentTemp():
     def __init__(self):
@@ -92,11 +92,11 @@ class PID():
         self.error = self.SetPoint - feedback_value    # desired - actual
         self.current_time = current_time if current_time is not None else time.time()
         delta_time = self.current_time - self.last_time
-        delta_error = error - self.last_error
+        delta_error = self.error - self.last_error
 
         if (delta_time >= self.sample_time):
-            self.PTerm = self.Kp * error
-            self.ITerm += error * delta_time
+            self.PTerm = self.Kp * self.error
+            self.ITerm += self.error * delta_time
 
             if (self.ITerm < -self.windup_guard):
                 self.ITerm = -self.windup_guard
@@ -155,6 +155,9 @@ class TempManagement():
     PIN = 16
 
     def setup(self):
+        self.feedback_list = []
+        self.time_list = []
+        self.setpoint_list = []
         #uncomment following three lines and delete fourth when relay is attached to pi
         #GPIO.setmode(GPIO.BCM)
         #GPIO.setup(self.PIN, GPIO.OUT)
@@ -169,54 +172,43 @@ class TempManagement():
     
 
     def call_pid(self, P, I, D):
-        pid = PID(P, I, D)
-        pid.SetPoint = 35    #desired temp. val
-        pid.setSampleTime(0.05)
+        self.pid = PID(P, I, D)
+        self.pid.SetPoint = 35    #desired temp. val
+        self.pid.setSampleTime(0.05)
 
-        feedback_list = []
-        time_list = []
-        setpoint_list = []
+    def pid_loop(self, i):
+        #get feedback aka avg (current) temperature
+        self.feedback = GetCurrentTemp.__init__(self)
+        output = self.pid.update(self.feedback)
 
-        while True:
-            #get feedback aka avg (current) temperature
-            feedback = GetCurrentTemp.__init__(self)
-            pid.update(feedback)
-            output = pid.output
+        if self.pid.error > 0:
+            self.motor_on(self.PIN)
             
-            if pid.error > 0:
-                self.motor_on(self.PIN)
-            
-            elif -0.1 <= pid.error <= 0.1:
-                self.motor_off(self.PIN)
+        elif -0.1 <= self.pid.error <= 0.1:
+            self.motor_off(self.PIN)
 
-            else:
-                 print("Unprecedented temperature. Hotter than 35 C. No means of mitigation.") 
+        else:
+            print("Unprecedented temperature. Hotter than 35 C. No means of mitigation.")
 
-            time.sleep(0.02)
+        time.sleep(0.02)
 
-            feedback_list.append(feedback)
-            setpoint_list.append(pid.SetPoint)
-            time_list.append(i)
+        self.feedback_list.append(self.feedback)
+        self.setpoint_list.append(self.pid.SetPoint)
+        self.time_list.append(time.time())  #time in seconds since UNIX time Jan 1, 1970 (UTC)
 
-        time_sm = np.array(time_list)
-        time_smooth = np.linspace(time_sm.min(), time_sm.max(), 300)
+        plt.cla()
+        plt.plot(self.time_list, self.feedback_list)
+        plt.plot(self.time_list, self.setpoint_list)
 
-        helper_x3 = make_interp_spline(time_list, feedback_list)
-        feedback_smooth = helper_x3(time_smooth)
-
-        plt.plot(time_smooth, feedback_smooth)
-        plt.plot(time_list, setpoint_list)
-        plt.xlim((0, L))
-        plt.ylim((min(feedback_list)-0.5, max(feedback_list)+0.5))
         plt.xlabel('time(s)')
         plt.ylabel('PID (PV)')
         plt.title('PID Test')
 
-        plt.ylim((1-0.5, 1+0.5))
-
         plt.grid(True)
-        plt.show()
 
+    def start_plotting(self):
+        self.ani = FuncAnimation(plt.gcf(), self.pid_loop, interval=1000)
+        plt.show()
 
 """
 if __name__ == "__main__":
