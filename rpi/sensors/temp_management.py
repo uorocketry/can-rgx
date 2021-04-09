@@ -1,50 +1,42 @@
-import logging
 import RPi.GPIO as GPIO
-import threading
 import time
-from multiprocessing import Queue
-from itertools import count
+
+import RPi.GPIO as GPIO
 import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
-#import numpy as np
+
+from rpi.sensors.thermometer import ThermometerList
+
+
+# import numpy as np
+
 
 class GetCurrentTemp():
     def __init__(self):
-        #ID's of sensors to poll - change when lay out finalized.
-        BOTTOM_RIGHT = '28-00000bc725ef' or '1'
-        TOP_LEFT = '28-00000bc743d3' or '2'
-        CENTER = '28-00000bc74b3b' or '3'
-        CENTER_LEFT = '28-00000bca5780' or '4'
+        # ID's of sensors to poll - change when lay out finalized.
+        sensor_id_list = ['1', '2', '3', '4']
 
-        from rpi.sensors.thermometer import ThermometerList
-        total_sensors = 4
-        sensor_id_list = [BOTTOM_RIGHT, TOP_LEFT, CENTER, CENTER_LEFT]
-
-        #call thermometer thread to retrieve current temperature
-        queue = Queue()
-        current_temp_thread = threading.Thread(target=lambda q, arg: q.put(ThermometerList.get_temperature_data_list(arg)), args=(queue, sensor_id_list))
-        current_temp_thread.start()
-        current_temp_thread.join()
-
-        current_temp_val = queue.get()
+        # call thermometer thread to retrieve current temperature
+        current_temp_val = ThermometerList.get_temperature_data(sensor_id_list)
         print(f'Current temperature retrieved from thermometer thread: {current_temp_val}')
 
-        GetCurrentTemp.current_avg_temp(self, current_temp_val, total_sensors)
+        GetCurrentTemp.current_avg_temp(self, current_temp_val)
 
-
-    def current_avg_temp(self, current_temps, total_sensors):
+    def current_avg_temp(self, current_temps):
         sum = 0
-        for key,value in current_temps.items():
-            #handle 'none' passed in for cases where sensor is disconnected
+        count = 0
+        for key, value in current_temps.items():
+            # handle 'none' passed in for cases where sensor is disconnected
             try:
                 print(value)
                 sum += value
-            except(TypeError):
+                count += 1
+            except TypeError:
                 print(f"Not all sensors are providing acceptable temperature data. "
                       f"Cannot perform designated operation on sensor: ({key} | value: '{value}') - Discarded")
                 pass
 
-        avg_temp = sum/total_sensors
+        avg_temp = sum / count
 
         print(f'Current average temperature : {avg_temp}')
         return avg_temp
