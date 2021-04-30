@@ -6,6 +6,7 @@ import tkinter.messagebox
 
 import laptop.gui.controlgui as controlgui
 import laptop.gui.logginggui as logginggui
+from laptop.gui.sensorgui import SensorGUI
 from laptop.network.loggingreceiver import logging_receive_forever
 from laptop.network.pingchecker import PingChecker
 from shared.customlogging.filter import SensorFilter
@@ -64,6 +65,10 @@ guiHandler.setFormatter(loggingFormatWindow)
 guiHandler.addFilter(loggingFilter)
 logger.addHandler(guiHandler)
 
+# Setup the sensor window
+window3 = tk.Toplevel(root)
+sensorGUI = SensorGUI(window3)
+
 # Start the log receiver
 t = threading.Thread(target=logging_receive_forever)
 t.setDaemon(True)
@@ -82,5 +87,6 @@ def close_application():
 
 root.protocol("WM_DELETE_WINDOW", close_application)
 window2.protocol("WM_DELETE_WINDOW", close_application)
+window3.protocol("WM_DELETE_WINDOW", close_application)
 
 root.mainloop()
