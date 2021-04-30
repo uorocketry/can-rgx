@@ -9,8 +9,6 @@ import time
 
 import shared.config as config
 from shared.customlogging.errormanager import ErrorManager
-from shared.customlogging.formatter import CSVFormatter
-from shared.customlogging.handler import MakeFileHandler
 
 
 class NetworkError(Exception):
@@ -98,23 +96,12 @@ class LogRecordStreamHandler(socketserver.StreamRequestHandler):
 
     def handle_record(self, record):
         logger = logging.getLogger(record.name)
-        if record.name.startswith('sensorlog') and len(
-                logger.handlers) == 0:  # Check if we are logging to a sensor and that this sensor has a handler
-            self.create_sensorlog_handler(record.name)
+
+        # Check if this is for a sensor logs and that is has a handler. If not, raise an error
+        if record.name.startswith('sensorlog') and len(logger.handlers) == 0:
+            logging.getLogger(__name__).error("Unhandled sensor logger: " + record.name)
 
         logger.handle(record)
-
-    @staticmethod
-    def create_sensorlog_handler(name):
-        logging.getLogger(__name__).debug(f"Adding handler {name} for sensor logging")
-        sensorlogger = logging.getLogger(name)
-
-        splitName = name.split('.')
-
-        csvHandler = MakeFileHandler('laptop', 'sensor', splitName[1], 'csv')
-        csvHandler.setFormatter(CSVFormatter())
-        sensorlogger.addHandler(csvHandler)
-        sensorlogger.setLevel(logging.INFO)
 
 
 def logging_receive_forever():
