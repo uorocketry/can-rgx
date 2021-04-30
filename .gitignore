@@ -110,3 +110,6 @@ config.ini
 
 #Visual Studio project settings
 .vscode
+
+# Pycharm's project settings
+.idea
