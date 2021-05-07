@@ -4,7 +4,7 @@ import time
 import RPi.GPIO as GPIO
 import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
-
+import ConfigParser
 from rpi.sensors.thermometer import ThermometerList
 
 
@@ -61,6 +61,7 @@ class PID():
         self.ITerm = 0.0
         self.DTerm = 0.0
         self.last_error = 0.0
+
         #windup guard
         self.int_error = 0.0
         self.windup_guard = 20.0
@@ -150,11 +151,19 @@ class TempManagement():
         self.feedback_list = []
         self.time_list = []
         self.setpoint_list = []
-        #uncomment following three lines and delete fourth when relay is attached to pi
-        #GPIO.setmode(GPIO.BCM)
-        #GPIO.setup(self.PIN, GPIO.OUT)
-        #self.call_pid(1.2, 1, 0.001, L=10)
-        feedback = GetCurrentTemp.__init__(self)
+
+        #read config file and loop through sections
+        config = ConfigParser.ConfigParser()
+        config.read('pid.cfg')
+        for section in config.sections():
+            p = config.get(section, 'P')
+            i = config.get(section, 'I')
+            d = config.get(section, 'D')
+            #uncomment following three lines and delete fourth when relay is attached to pi
+            #GPIO.setmode(GPIO.BCM)
+            #GPIO.setup(self.PIN, GPIO.OUT)
+            #self.call_pid(p, i, d, L=10)
+            feedback = GetCurrentTemp.__init__(self)
 
     def motor_on(self, pin):
         GPIO.output(pin, GPIO.HIGH)  # Turn relay on
