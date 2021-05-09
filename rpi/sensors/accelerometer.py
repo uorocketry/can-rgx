@@ -2,6 +2,8 @@ import time
 
 import spidev
 
+from shared.customlogging.errormanager import ErrorManager
+
 
 def twos_comp(val, bits):
     """compute the 2's complement of int value val"""
@@ -53,25 +55,38 @@ CONV_FULLR = 0.004  # applicable for all gs
 EARTH_GRAVITY = 9.80665
 
 class Accelerometer:
-    def __init__(self, measure_range=RANGE_16G):
+    def setup(self, measure_range=RANGE_16G):
         self.spi = spidev.SpiDev()
         self.spi.open(SPIBus, SPIDevice)
         self.spi.max_speed_hz = SPI_MAX_CLOCK_HZ
         self.spi.mode = SPI_MODE
 
-        self.get_device_id()
+        self.check_sensor_connection()
         self.set_measure_range(measure_range)
         # self.set_fifo()
         self.set_bw_rate()
         self.enable_measure_mode()
 
-    def get_device_id(self):
-        dev_id = self.xfer_read_byte(0x00, 1)
-        address_list = [0x00, 0x1D, 0x1E]
-        multibyte_test = self.xfer_read_multiple_bytes_sequential(start_address=0x00, n=3)
-        # print(f"Device ID : {dev_id}")
-        # print(f"mutlibyte read test : {multibyte_test}")
-        return dev_id
+    def check_sensor_connection(self):
+        """
+        Checks if the correct sensor is connected, or if anything is connected
+        at all. If the sensor is not connected, an error will be logged and this
+        function will block until it connects.
+        """
+        em = ErrorManager(__name__)
+
+        DEVICE_ID = 0xE5
+
+        if self.xfer_read_byte(0x00, 1) == DEVICE_ID:
+            return
+
+        em.error("Acceleration sensor is not connected", "ACCEL_CONNECTION")
+
+        # Wait until the sensor connects
+        while self.xfer_read_byte(0x00, 1) != DEVICE_ID:
+            pass
+
+        em.resolve("Acceleration sensor connected", "ACCEL_CONNECTION")
 
     def set_measure_range(self, measure_range):
         """Function to set range and resolution"""
@@ -134,7 +149,7 @@ def main():
     adxl = Accelerometer()
     while True:
         val = adxl.get_acceleration_data()
-        # print(val)
+        print(val)
         time.sleep(1)
 
 
