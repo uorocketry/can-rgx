@@ -1,3 +1,7 @@
+"""
+Code for interacting with the ADCMXL3021BMLZ vibration sensor
+"""
+
 import logging
 import time
 
@@ -9,11 +13,11 @@ from rpi.sensors.sensorlogging import SensorLogging
 # Only bus 0 is available on RPi
 SPIBus = 0
 # Chip select. Either 0 or 1
-SPIDevice = 0
+SPIDevice = 1
 
-# Sample rate to use. See table 20 in datasheet for details. Note: Table 80 has an error.
+# Sample rate to use. See table 20 in datasheet for details. Note: Table 89 has a possible error.
 # Sample Rate = 220000 / 2^(AVG_CNT_Bit)
-AVG_CNT_Bit = 0
+AVG_CNT_Bit = 7
 
 # Number of FFT averages to do
 FFTAverages = 1
@@ -81,11 +85,12 @@ FLASH_CNT_U = 0x7E
 
 
 class FFTRecord:
-    def __init__(self, lowestfrequency, binsize, axis, data):
+    def __init__(self, lowestfrequency, binsize, x_data, y_data, z_data):
         self.lowestfrequency = lowestfrequency
         self.binsize = binsize
-        self.axis = axis
-        self.data = data  # This is in mg
+        self.x_data = x_data
+        self.y_data = y_data
+        self.z_data = z_data
 
 
 # If using Pylint in IDE, for some reason warns about GPIO not
@@ -241,7 +246,7 @@ class Vibration(SensorLogging):
         combineData = lambda data: (data[0] << 8) | data[1]
 
         # Get the correct value from the data received. This will be in mg
-        getValue = lambda data: (2 ** (combineData(data) / 2048) / FFTAverages) * 0.9535
+        getValue = lambda data: (2 ** ((combineData(data) / 2048)) / FFTAverages) * 0.9535
 
         data = list()
 
@@ -249,7 +254,7 @@ class Vibration(SensorLogging):
         binsize = samplerate / 4096
 
         axis = [X_BUF, Y_BUF, Z_BUF]
-        axisName = ['x', 'y', 'z']
+        axis_data = [list(), list(), list()]
 
         self.spi.xfer2([axis[0] & ~(1 << 7), 0x00])
         for n, a in enumerate(axis):
@@ -262,12 +267,17 @@ class Vibration(SensorLogging):
                 else:
                     rcv = self.spi.xfer2([0x00, 0x00])  # If we are at the very end, don't request anything
 
-                data.append(FFTRecord(binsize * i, binsize, axisName[n], getValue(rcv)))
+                axis_data[n].append(getValue(rcv))
+
+        # Combine the data from all axis together
+        for i in range(2048):
+            data.append(FFTRecord(binsize * i, binsize, axis_data[0][i], axis_data[1][i], axis_data[2][i]))
 
         return data
 
     def run(self):
-        super().setup_logging("vibration", ["axis", "lowestfrequency (Hz)", "binsize (Hz)", "value (mg)"])
+        super().setup_logging("vibration",
+                              ["binsize (Hz)", "lowestfrequency (Hz)", "value x (mg)", "value y (mg)", "value z (mg)"])
         self.setup()
         while True:
             self.check_sensor_connection(True)
@@ -279,4 +289,4 @@ class Vibration(SensorLogging):
             data = self.read_fft_data()
             now = time.time() * 1000
             for i in data:
-                self.sensorlogger.info([now, i.axis, i.lowestfrequency, i.binsize, i.data])
+                self.sensorlogger.info([now, i.binsize, i.lowestfrequency, i.x_data, i.y_data, i.z_data])
