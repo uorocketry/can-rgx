@@ -112,7 +112,7 @@ class Accelerometer(SensorLogging):
 
     def xfer_read_byte(self, address, n):
         """"FIX THIS  'list' and 'int' error SPI function to read bytes, set MSB high to read"""
-        retval = self.spi.xfer2([(address | READ_BIT << 7), 0x00])[1:]
+        retval = self.spi.xfer2([(address | READ_BIT << 7), 0x00])[1]
         return retval
 
     def xfer_read_multiple_bytes_sequential(self, start_address, n):
