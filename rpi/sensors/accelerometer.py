@@ -2,6 +2,7 @@ import time
 
 import spidev
 
+from rpi.sensors.sensorlogging import SensorLogging
 from shared.customlogging.errormanager import ErrorManager
 
 
@@ -54,7 +55,8 @@ SEQUENTIAL_READ_BYTE = 0b11
 CONV_FULLR = 0.004  # applicable for all gs
 EARTH_GRAVITY = 9.80665
 
-class Accelerometer:
+
+class Accelerometer(SensorLogging):
     def setup(self, measure_range=RANGE_16G):
         self.spi = spidev.SpiDev()
         self.spi.open(SPIBus, SPIDevice)
@@ -144,14 +146,10 @@ class Accelerometer:
 
         return {"x": x_data, "y": y_data, "z": z_data}
 
+    def run(self):
+        super().setup_logging("acceleration", ["x", "y", "z"])
 
-def main():
-    adxl = Accelerometer()
-    while True:
-        val = adxl.get_acceleration_data()
-        print(val)
-        time.sleep(1)
-
-
-if __name__ == "__main__":
-    main()
+        self.setup()
+        while True:
+            val = self.get_acceleration_data()
+            self.sensorlogger.info([time.time() * 100, val["x"], val["y"], val["z"]])
