@@ -4,10 +4,18 @@ import time
 
 from DMXEnttecPro import Controller
 
+from shared.customlogging.errormanager import ErrorManager
+
 
 class LEDs:
     def __init__(self):
-        self.dmx = Controller('/dev/ttyUSB0', auto_submit=True)  # TODO: Use the proper identifier for the USB device
+        try:
+            # TODO: Use the proper identifier for the USB device
+            self.dmx = Controller('/dev/ttyUSB0', auto_submit=True)
+        except IOError:
+            em = ErrorManager(__name__)
+            # TODO: Maybe retry to connect after a timeout? Would need to use a separate thread.
+            em.error("Could connect to the DMX controller! Please restart the RPi server.", "DMX_CONNECTION")
 
         # Use a lock to access the DMX Controller. Not clear if this is needed, but better be safe than worry.
         self.lock = threading.Lock()
