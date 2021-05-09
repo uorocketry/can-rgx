@@ -128,7 +128,6 @@ class Accelerometer(SensorLogging):
         The return value is a map of the format {"x": x_data, "y": y_data, "z": z_data}
         """
         raw_axes = self.xfer_read_multiple_bytes_sequential(start_address=DATA_X0, n=6)
-        print(raw_axes)
 
         # Combine data
         x_data = (raw_axes[1] << 8) | raw_axes[0]
