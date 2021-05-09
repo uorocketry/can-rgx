@@ -49,12 +49,8 @@ DUMMY_BYTE = 0x00
 SEQUENTIAL_READ_BYTE = 0b11
 
 # Conversion factors
-CONV_FULLR = 3.9  # applicable for all gs
-CONV_2G_10B = 3.9  # mg/LSB
-CONV_4G_10B = 7.8
-CONV_8G_10B = 15.6
-CONV_16G_10B = 31.2
-
+CONV_FULLR = 0.004  # applicable for all gs
+EARTH_GRAVITY = 9.80665
 
 class Accelerometer:
     def __init__(self, measure_range=RANGE_16G):
@@ -110,36 +106,28 @@ class Accelerometer:
         return retlist
 
     def get_acceleration_data(self):
+        """
+        Return the acceleration of each axis in m/s^2
+        The return value is a map of the format {"x": x_data, "y": y_data, "z": z_data}
+        """
         raw_axes = self.xfer_read_multiple_bytes_sequential(start_address=DATA_X0, n=6)
         print(raw_axes)
 
         # Combine data
         x_data = (raw_axes[1] << 8) | raw_axes[0]
-        # x_data >> 4     #right-shift to discard lower 4 bits
         y_data = (raw_axes[3] << 8) | raw_axes[2]
-        # y_data >> 4
         z_data = (raw_axes[5] << 8) | raw_axes[4]
-        # z_data >> 4
-
-        print(f"x: {x_data}")
-        print(f"y : {y_data}")
-        print(f"z : {z_data}")
 
         # Apply 2s comp
         x_data = twos_comp(x_data, 16)
         y_data = twos_comp(y_data, 16)
         z_data = twos_comp(z_data, 16)
 
-        ret = [x_data, y_data, z_data]
+        x_data *= CONV_FULLR * EARTH_GRAVITY
+        y_data *= CONV_FULLR * EARTH_GRAVITY
+        z_data *= CONV_FULLR * EARTH_GRAVITY
 
-        # Convert from LSB/mg to mg
-        for i in range(len(ret)):
-            ret[i] = (ret[i] * 0.004 * 9.8)
-
-        # Return values
-        print(ret)
-
-
+        return {"x": x_data, "y": y_data, "z": z_data}
 
 
 def main():
