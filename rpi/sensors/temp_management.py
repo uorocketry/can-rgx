@@ -145,7 +145,7 @@ class PID():
 
 class TempManagement():
     #relay pin on pi
-    PIN = 16
+    PIN = 21
 
     def setup(self):
         self.feedback_list = []
@@ -159,6 +159,7 @@ class TempManagement():
             p = config.get(section, 'P')
             i = config.get(section, 'I')
             d = config.get(section, 'D')
+
             #uncomment following three lines and delete fourth when relay is attached to pi
             #GPIO.setmode(GPIO.BCM)
             #GPIO.setup(self.PIN, GPIO.OUT)
