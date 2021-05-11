@@ -56,6 +56,9 @@ SEQUENTIAL_READ_BYTE = 0b11
 CONV_FULLR = 0.004  # applicable for all gs
 EARTH_GRAVITY = 9.80665
 
+# Precision of the output, how many decimals to keep
+OUTPUT_PRECISION = 3
+
 
 class Accelerometer(SensorLogging):
     def setup(self, measure_range=RANGE_16G):
@@ -150,6 +153,11 @@ class Accelerometer(SensorLogging):
         x_data *= CONV_FULLR * EARTH_GRAVITY
         y_data *= CONV_FULLR * EARTH_GRAVITY
         z_data *= CONV_FULLR * EARTH_GRAVITY
+
+        # Round the values
+        x_data = round(x_data, OUTPUT_PRECISION)
+        y_data = round(y_data, OUTPUT_PRECISION)
+        z_data = round(z_data, OUTPUT_PRECISION)
 
         return {"x": x_data, "y": y_data, "z": z_data}
 
