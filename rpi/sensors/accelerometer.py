@@ -45,7 +45,7 @@ SELF_TEST = 0b10001111  # full resolution (13bits) MSB mode, +/-16g
 # register values
 MEASURE_MODE = 0b00001000  # set device to measure mode (D3)
 BW_OUTPUT_RATE = 0x0B  # normal operation, 3200Hz output rate, 1600Hz bandwidth
-FIFO_MODE = 0b10011111  # stream mode, INT1 triggered, 31bit buffer
+FIFO_MODE = 0b10000001  # stream mode, INT1 triggered, 31bit buffer
 FIFO_BYPASS = 0b00000000
 READ_BIT = 0x01
 WRITE_BIT = 0x00
@@ -66,7 +66,7 @@ class Accelerometer(SensorLogging):
 
         self.check_sensor_connection()
         self.set_measure_range(measure_range)
-        # self.set_fifo()
+        self.set_fifo()
         self.set_bw_rate()
         self.enable_measure_mode()
 
