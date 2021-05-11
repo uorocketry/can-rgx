@@ -34,10 +34,10 @@ SPIDevice = 0  # vib on 1, acc on 0
 CSHIGH = False  # cs pin low at start of transmission
 
 # Data Range
-RANGE_2G = 0b00001000  # full resolution (10bits) , left-justified MSB mode, +/- 2g
-RANGE_4G = 0b00001001  # full resolution (11bits), MSB mode, +/- 4g
-RANGE_8G = 0b00001010  # full resolution(12bits), MSB mode, +/-8g
-RANGE_16G = 0b00001011  # full resolution(13bits), MSB mode, +/-16g
+RANGE_2G = 0b00  # full resolution (10bits) , left-justified MSB mode, +/- 2g
+RANGE_4G = 0b01  # full resolution (11bits), MSB mode, +/- 4g
+RANGE_8G = 0b10  # full resolution(12bits), MSB mode, +/-8g
+RANGE_16G = 0b01  # full resolution(13bits), MSB mode, +/-16g
 # self test:
 SELF_TEST = 0b10001111  # full resolution (13bits) MSB mode, +/-16g
 
@@ -92,7 +92,7 @@ class Accelerometer(SensorLogging):
 
     def set_measure_range(self, measure_range):
         """Function to set range and resolution"""
-        self.xfer_write_byte(DATA_FORMAT, measure_range)
+        self.xfer_write_byte(DATA_FORMAT | 0b1000, measure_range)
 
     def set_fifo(self):
         """Function to set FIFO mode"""
