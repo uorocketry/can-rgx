@@ -83,13 +83,13 @@ class Accelerometer(SensorLogging):
 
         DEVICE_ID = 0xE5
 
-        if self.xfer_read_byte(0x00, 1) == DEVICE_ID:
+        if self.xfer_read_byte(0x00) == DEVICE_ID:
             return
 
         em.error("Acceleration sensor is not connected", "ACCEL_CONNECTION")
 
         # Wait until the sensor connects
-        while self.xfer_read_byte(0x00, 1) != DEVICE_ID:
+        while self.xfer_read_byte(0x00) != DEVICE_ID:
             pass
 
         em.resolve("Acceleration sensor connected", "ACCEL_CONNECTION")
@@ -114,7 +114,7 @@ class Accelerometer(SensorLogging):
         """SPI function to write bytes, set MSB low"""
         self.spi.xfer2([(address & ~(1 << 7)), value & 0XFF])
 
-    def xfer_read_byte(self, address, n):
+    def xfer_read_byte(self, address):
         """"FIX THIS  'list' and 'int' error SPI function to read bytes, set MSB high to read"""
         retval = self.spi.xfer2([(address | READ_BIT << 7), 0x00])[1]
         return retval
@@ -150,6 +150,7 @@ class Accelerometer(SensorLogging):
         y_data = twos_comp(y_data, 16)
         z_data = twos_comp(z_data, 16)
 
+        # Convert to m/s^2
         x_data *= CONV_FULLR * EARTH_GRAVITY
         y_data *= CONV_FULLR * EARTH_GRAVITY
         z_data *= CONV_FULLR * EARTH_GRAVITY
