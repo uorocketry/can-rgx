@@ -18,6 +18,7 @@ DATA_FORMAT = 0x31  # clear bit d6 for 4 wire, set for 3 wire
 BW_RATE = 0x2C  # date and power mode control
 POWER_CTL = 0x2D  # power saving features control
 FIFO_CTL = 0x38  # FIFO mode select
+INT_SOURCE = 0x30
 
 DATA_X0 = 0x32  # x-axis data0
 DATA_X1 = 0x33  # x-axis data1
@@ -122,6 +123,13 @@ class Accelerometer(SensorLogging):
         retlist = self.spi.xfer2(spi_read)[1:]
         return retlist
 
+    def wait_until_data_ready(self):
+        """Block here until the sensor has new data"""
+        ready = 0
+        while ready == 0:
+            int_source = self.xfer_read_byte(INT_SOURCE)
+            ready = (int_source >> 7) & 0x1  # Check the DATA_READY bit
+
     def get_acceleration_data(self):
         """
         Return the acceleration of each axis in m/s^2
@@ -150,5 +158,6 @@ class Accelerometer(SensorLogging):
 
         self.setup()
         while True:
+            self.wait_until_data_ready()
             val = self.get_acceleration_data()
             self.sensorlogger.info([time.time() * 100, val["x"], val["y"], val["z"]])
