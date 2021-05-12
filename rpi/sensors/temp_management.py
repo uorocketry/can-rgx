@@ -4,8 +4,8 @@ import time
 import RPi.GPIO as GPIO
 import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
-import ConfigParser
-from rpi.sensors.thermometer import ThermometerList
+import configparser
+#from rpi.sensors.thermometer import ThermometerList
 
 
 # import numpy as np
@@ -14,7 +14,8 @@ from rpi.sensors.thermometer import ThermometerList
 class GetCurrentTemp():
     def __init__(self):
         # ID's of sensors to poll - change when lay out finalized.
-        sensor_id_list = ['1', '2', '3', '4']
+        sensor_id_list = ['2', '3']
+        from rpi.sensors.thermometer import ThermometerList
 
         # call thermometer thread to retrieve current temperature
         current_temp_val = ThermometerList.get_temperature_data(sensor_id_list)
@@ -153,7 +154,7 @@ class TempManagement():
         self.setpoint_list = []
 
         #read config file and loop through sections
-        config = ConfigParser.ConfigParser()
+        config = configparser.ConfigParser()
         config.read('pid.cfg')
         for section in config.sections():
             p = config.get(section, 'P')
