@@ -9,6 +9,7 @@ import configparser
 
 
 # import numpy as np
+SetPoint = 35  # desired temp
 
 
 class GetCurrentTemp():
@@ -58,7 +59,6 @@ class PID():
         """ 
         Clear PID computations and coefficients
         """
-        self.SetPoint = 35 #desired temp
         self.ITerm = 0.0
         self.DTerm = 0.0
         self.last_error = 0.0
@@ -83,7 +83,7 @@ class PID():
         sleep(iteration_time)
         }
         """
-        self.error = self.SetPoint - feedback_value    # desired - actual
+        self.error = SetPoint - feedback_value    # desired - actual
         self.current_time = current_time if current_time is not None else time.time()
         delta_time = self.current_time - self.last_time
         delta_error = self.error - self.last_error
@@ -146,12 +146,12 @@ class PID():
 
 class TempManagement():
     #relay pin on pi
-    PIN = 21
+    RELAY_PIN = 21
 
     def setup(self):
         self.feedback_list = []
         self.time_list = []
-        self.setpoint_list = []
+        SetPoint_list = []
 
         #read config file and loop through sections
         config = configparser.ConfigParser()
@@ -163,7 +163,7 @@ class TempManagement():
 
             #uncomment following three lines and delete fourth when relay is attached to pi
             #GPIO.setmode(GPIO.BCM)
-            #GPIO.setup(self.PIN, GPIO.OUT)
+            #GPIO.setup(self.RELAY_PIN, GPIO.OUT)
             #self.call_pid(p, i, d, L=10)
             feedback = GetCurrentTemp.__init__(self)
 
@@ -185,10 +185,10 @@ class TempManagement():
         output = self.pid.update(self.feedback)
 
         if self.pid.error > 0:
-            self.motor_on(self.PIN)
+            self.motor_on(self.RELAY_PIN)
             
         elif -0.1 <= self.pid.error <= 0.1:
-            self.motor_off(self.PIN)
+            self.motor_off(self.RELAY_PIN)
 
         else:
             print("Unprecedented temperature. Hotter than 35 C. No means of mitigation.")

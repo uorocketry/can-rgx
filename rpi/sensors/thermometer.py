@@ -7,10 +7,14 @@ from rpi.sensors.sensorlogging import SensorLogging
 from rpi.sensors.temp_management import TempManagement
 from shared.customlogging.errormanager import ErrorManager
 
-thermometer_names = {'28-00000bc725ef': '1',
-                     '28-00000bc743d3': '2',
-                     '28-00000bc74b3b': '3',
-                     '28-00000bca5780': '4',
+#thermometer_names = {'28-00000bc725ef': '1',
+#                     '28-00000bc743d3': '2',
+#                     '28-00000bc74b3b': '3',
+#                     '28-00000bca5780': '4',
+#                     }
+
+thermometer_names = {'28-00000bc743d3': '2',
+                     '28-00000bc74b3b': '3'
                      }
 
 
