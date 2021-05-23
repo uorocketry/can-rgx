@@ -20,11 +20,17 @@ const uint8_t MOTOR2_LOWER_LIMIT = 0;
 
 // Ports for the photodiodes. On a I2C read, the data will be sent in the listed order.
 const uint8_t PHOTODIODE_PORTS[] = {
-        1, // MSB
-        1,
-        1,
-        1, // LSB
+       22, //MSB
+       12,
+       20,
+       17,
+       16,
+       15,
+       14  //LSB
 };
+
+// Threshold at which the photodiodes should be recognized as HIGH.
+const int PHOTODIODE_TRESHOLD = 50;
 
 // Communication settings
 const uint8_t I2C_ADDRESS = 0x2;
@@ -103,10 +109,13 @@ void sendI2CState() {
     } else if (i2CSendingValue == I2CSendingValue::LED) {
         for (auto i : PHOTODIODE_PORTS) {
             // Read the photodiode value
-            auto value = digitalRead(i);
+            int value = analogRead(i);
 
             // Add the value to the state
-            state = (state << 1) | (value & 1);
+            state = (state << 1);
+            if (value > PHOTODIODE_TRESHOLD) {
+                state |= 0x1;
+            }
         }
     }
     Wire.write(state);
@@ -174,4 +183,20 @@ void printDebugInfo() {
             motor2.isInErrorState(), BIN);
     PRINTLN("\n");
     lastPrintout = millis(); // Update the last time we printed the debug info
+
+	uint8_t state = 0;
+	for (auto i : PHOTODIODE_PORTS) {
+		// Read the photodiode value
+		auto value = analogRead(i);
+
+        // Add the value to the state
+        state = (state << 1);
+        if (value > PHOTODIODE_TRESHOLD) {
+            state |= 0x1;
+        }
+	}
+
+	PRINT("LED State: ");
+	PRINT(state);
+	PRINTLN("\n");
 }
