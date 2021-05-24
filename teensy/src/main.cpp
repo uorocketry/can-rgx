@@ -97,10 +97,15 @@ void receiveI2CEvent(int) {
     }
 }
 
-// Sends the motors state to the RPi in a 4 bit number, 2 bit for each motor.
-// The MSB of a motor is set to 1 if that motor is moving. The LSB is set to 1 if that motor is in an error state.
-// The two most significant bits are for motor 1, the other two LSB are for motor 2.
-// For example, if motor 1 is not moving and in an error state, and motor 2 is moving and not in error state, 0110 will be sent
+// The sent state depends on the content of the i2cSendingValue variable.
+// If sending the motor state:
+//      Sends the motors state to the RPi in a 4 bit number, 2 bit for each motor.
+//      The MSB of a motor is set to 1 if that motor is moving. The LSB is set to 1 if that motor is in an error state.
+//      The two most significant bits are for motor 1, the other two LSB are for motor 2.
+//      For example, if motor 1 is not moving and in an error state, and motor 2 is moving and not in error state, 0110 will be sent
+// If sending the LED state:
+//      The state of each LED is represented by a 0 (OFF) or 1 (ON).
+//      See the PHOTODIODE_PORTS variable for the order of the LEDs.
 void sendI2CState() {
     uint8_t state = 0;
     if (i2CSendingValue == I2CSendingValue::MOTOR) {
