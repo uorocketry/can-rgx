@@ -40,7 +40,7 @@ const uint64_t SERIAL_RATE = 9600;
 const volatile uint16_t MOTOR_TIMEOUT_MILLI = 10 * 1000;
 
 // Store what we should send to the Pi for the i2C value
-I2CSendingValue i2CSendingValue = I2CSendingValue::MOTOR;
+I2CSendingValue i2cSendingValue = I2CSendingValue::MOTOR;
 
 Motor motor1(MOTOR1_EN, MOTOR1_IN1, MOTOR1_IN2);
 Motor motor2(MOTOR2_EN, MOTOR2_IN1, MOTOR2_IN2);
@@ -92,7 +92,7 @@ void receiveI2CEvent(int) {
                 }
             }
         } else { // Change what a i2c read will send
-            i2CSendingValue = static_cast<I2CSendingValue>(data & 1);
+            i2cSendingValue = static_cast<I2CSendingValue>(data & 1);
         }
     }
 }
@@ -108,10 +108,10 @@ void receiveI2CEvent(int) {
 //      See the PHOTODIODE_PORTS variable for the order of the LEDs.
 void sendI2CState() {
     uint8_t state = 0;
-    if (i2CSendingValue == I2CSendingValue::MOTOR) {
+    if (i2cSendingValue == I2CSendingValue::MOTOR) {
         state = (motor1.isMoving() << 3) | (motor1.isInErrorState() << 2) | (motor2.isMoving() << 1) |
                 motor2.isInErrorState();
-    } else if (i2CSendingValue == I2CSendingValue::LED) {
+    } else if (i2cSendingValue == I2CSendingValue::LED) {
         for (auto i : PHOTODIODE_PORTS) {
             // Read the photodiode value
             int value = analogRead(i);
