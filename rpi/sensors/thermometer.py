@@ -80,7 +80,7 @@ class ThermometerList(threading.Thread):
                 em.error(
                     "Temperature sensor {} is returning invalid data. It may have been disconnected.".format(self.name),
                     self.name)
-            except OSError:
+            except (OSError, IndexError):
                 em.error("Error reading from temperature sensor {}. Check if it is connected.".format(self.name),
                          self.name)
 
