@@ -1,52 +1,28 @@
-import RPi.GPIO as GPIO
+import configparser
+import logging
+import threading
 import time
 
 import RPi.GPIO as GPIO
 import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
-import configparser
-#from rpi.sensors.thermometer import ThermometerList
+
+from rpi.sensors.thermometer import ThermometerList
+# desired temp
+from shared.customlogging.errormanager import ErrorManager
+
+SetPoint = 35
+
+# relay pin on pi
+RELAY_PIN = 21
+
+# ID's of sensors to poll - change when lay out finalized.
+sensor_id_list = ['2', '3']
 
 
-# import numpy as np
-SetPoint = 35  # desired temp
-
-
-class GetCurrentTemp():
-    def __init__(self):
-        # ID's of sensors to poll - change when lay out finalized.
-        sensor_id_list = ['2', '3']
-        from rpi.sensors.thermometer import ThermometerList
-
-        # call thermometer thread to retrieve current temperature
-        current_temp_val = ThermometerList.get_temperature_data(sensor_id_list)
-        print(f'Current temperature retrieved from thermometer thread: {current_temp_val}')
-
-        GetCurrentTemp.current_avg_temp(self, current_temp_val)
-
-    def current_avg_temp(self, current_temps):
-        sum = 0
-        count = 0
-        for key, value in current_temps.items():
-            # handle 'none' passed in for cases where sensor is disconnected
-            try:
-                print(value)
-                sum += value
-                count += 1
-            except TypeError:
-                print(f"Not all sensors are providing acceptable temperature data. "
-                      f"Cannot perform designated operation on sensor: ({key} | value: '{value}') - Discarded")
-                pass
-
-        avg_temp = sum / count
-
-        print(f'Current average temperature : {avg_temp}')
-        return avg_temp
-
-
-class PID():
-    def __init__(self, P, I, D, current_time=None):
-        #pid initialization
+class PID:
+    def __init__(self, P, I, D, SetPoint, current_time=None):
+        # pid initialization
         self.Kp = P
         self.Ki = I
         self.Kd = D
@@ -63,11 +39,11 @@ class PID():
         self.DTerm = 0.0
         self.last_error = 0.0
 
-        #windup guard
+        # windup guard
         self.int_error = 0.0
         self.windup_guard = 20.0
         self.output = 0.0
-    
+
     def update(self, feedback_value, current_time=None):
         """
         Calculate PID value for given reference feedback
@@ -83,31 +59,30 @@ class PID():
         sleep(iteration_time)
         }
         """
-        self.error = SetPoint - feedback_value    # desired - actual
+        self.error = SetPoint - feedback_value  # desired - actual
         self.current_time = current_time if current_time is not None else time.time()
         delta_time = self.current_time - self.last_time
         delta_error = self.error - self.last_error
 
-        if (delta_time >= self.sample_time):
+        if delta_time >= self.sample_time:
             self.PTerm = self.Kp * self.error
             self.ITerm += self.error * delta_time
 
-            if (self.ITerm < -self.windup_guard):
+            if self.ITerm < -self.windup_guard:
                 self.ITerm = -self.windup_guard
-            elif (self.ITerm > self.windup_guard):
+            elif self.ITerm > self.windup_guard:
                 self.ITerm = self.windup_guard
-            
+
             self.DTerm = 0.0
             if delta_time > 0:
                 self.DTerm = delta_error / delta_time
 
-            #save last time and last error for next calculation
+            # save last time and last error for next calculation
             self.last_time = self.current_time
             self.last_error = self.error
 
             self.output = self.PTerm + (self.Ki * self.ITerm) + (self.Kd * self.DTerm)
-        
-    
+
     def setKp(self, proportional_gain):
         """
         Determine how aggressively the PID reacts to the current error in relation to proportional gain
@@ -144,16 +119,15 @@ class PID():
         self.sample_time = sample_time
 
 
-class TempManagement():
-    #relay pin on pi
-    RELAY_PIN = 21
+class TempManagement(threading.Thread):
 
-    def setup(self):
+    def __init__(self):
+        super().__init__()
         self.feedback_list = []
         self.time_list = []
-        SetPoint_list = []
+        self.setpoint_list = []
 
-        #read config file and loop through sections
+        # read config file and loop through sections
         config = configparser.ConfigParser()
         config.read('pid.cfg')
         for section in config.sections():
@@ -161,43 +135,75 @@ class TempManagement():
             i = config.get(section, 'I')
             d = config.get(section, 'D')
 
-            #uncomment following three lines and delete fourth when relay is attached to pi
-            #GPIO.setmode(GPIO.BCM)
-            #GPIO.setup(self.RELAY_PIN, GPIO.OUT)
-            #self.call_pid(p, i, d, L=10)
-            feedback = GetCurrentTemp.__init__(self)
+        # uncomment following three lines and delete fourth when relay is attached to pi
+        # GPIO.setmode(GPIO.BCM)
+        # GPIO.setup(RELAY_PIN, GPIO.OUT)
+        # self.call_pid(p, i, d, L=10)
+        feedback = self.get_current_avg_temp()
 
-    def motor_on(self, pin):
-        GPIO.output(pin, GPIO.HIGH)  # Turn relay on
+    @staticmethod
+    def get_current_avg_temp():
+        # Get the list of temperatures from the thermometer thread
+        current_temps = ThermometerList.get_temperature_data(sensor_id_list)
 
-    def motor_off(self, pin):
-        GPIO.output(pin, GPIO.LOW)  # Turn relay off
-    
+        sum = 0
+        count = 0
+        for key, value in current_temps.items():
+            # handle 'none' passed in for cases where sensor is disconnected
+            try:
+                print(value)
+                sum += value
+                count += 1
+            except TypeError:
+                print(f"Not all sensors are providing acceptable temperature data. "
+                      f"Cannot perform designated operation on sensor: ({key} | value: '{value}') - Discarded")
+                pass
+
+        avg_temp = sum / count
+
+        print(f'Current average temperature : {avg_temp}')
+        return avg_temp
+
+    def heater_on(self):
+        GPIO.output(RELAY_PIN, GPIO.HIGH)  # Turn relay on
+
+    def heater_off(self):
+        GPIO.output(RELAY_PIN, GPIO.LOW)  # Turn relay off
 
     def call_pid(self, P, I, D):
-        self.pid = PID(P, I, D)
-        self.pid.SetPoint = 35    #desired temp. val
+        self.pid = PID(P, I, D, SetPoint)
         self.pid.setSampleTime(0.05)
 
-    def pid_loop(self, i):
-        #get feedback aka avg (current) temperature
-        self.feedback = GetCurrentTemp.__init__(self)
-        output = self.pid.update(self.feedback)
+    def pid_loop(self):
+        em = ErrorManager(__name__)
+        logger = logging.getLogger(__name__)
+
+        # get feedback aka avg (current) temperature
+        feedback = self.get_current_avg_temp()
+        self.pid.update(feedback)
 
         if self.pid.error > 0:
-            self.motor_on(self.RELAY_PIN)
-            
+            self.heater_on()
+            logger.debug("Turning heater on")
         elif -0.1 <= self.pid.error <= 0.1:
-            self.motor_off(self.RELAY_PIN)
-
+            self.heater_off()
+            logger.debug("Turning heater off")
         else:
-            print("Unprecedented temperature. Hotter than 35 C. No means of mitigation.")
+            em.error("Unprecedented temperature. Hotter than 35 C. No means of mitigation.", "HIGH_TEMP")
 
         time.sleep(0.02)
+        return feedback
 
-        self.feedback_list.append(self.feedback)
+    def run(self):
+        while True:
+            self.pid_loop()
+
+    def plot(self):
+        feedback = self.pid_loop()
+
+        self.feedback_list.append(feedback)
         self.setpoint_list.append(self.pid.SetPoint)
-        self.time_list.append(time.time())  #time in seconds since UNIX time Jan 1, 1970 (UTC)
+        self.time_list.append(time.time())  # time in seconds since UNIX time Jan 1, 1970 (UTC)
 
         plt.cla()
         plt.plot(self.time_list, self.feedback_list)
@@ -212,6 +218,7 @@ class TempManagement():
     def start_plotting(self):
         self.ani = FuncAnimation(plt.gcf(), self.pid_loop, interval=1000)
         plt.show()
+
 
 """
 if __name__ == "__main__":
