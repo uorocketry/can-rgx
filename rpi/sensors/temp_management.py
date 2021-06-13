@@ -120,7 +120,6 @@ class PID:
 
 
 class TempManagement(threading.Thread):
-
     def __init__(self):
         super().__init__()
         self.feedback_list = []
@@ -129,11 +128,13 @@ class TempManagement(threading.Thread):
 
         # read config file and loop through sections
         config = configparser.ConfigParser()
-        config.read('pid.cfg')
-        for section in config.sections():
-            p = config.get(section, 'P')
-            i = config.get(section, 'I')
-            d = config.get(section, 'D')
+        config.read('pid.ini')
+        P = int(config['values']['P'])
+        I = int(config['values']['I'])
+        D = int(config['values']['D'])
+
+        self.pid = PID(P, I, D, SetPoint)
+        self.pid.setSampleTime(0.05)
 
         # uncomment following three lines and delete fourth when relay is attached to pi
         # GPIO.setmode(GPIO.BCM)
@@ -169,10 +170,6 @@ class TempManagement(threading.Thread):
 
     def heater_off(self):
         GPIO.output(RELAY_PIN, GPIO.LOW)  # Turn relay off
-
-    def call_pid(self, P, I, D):
-        self.pid = PID(P, I, D, SetPoint)
-        self.pid.setSampleTime(0.05)
 
     def pid_loop(self):
         em = ErrorManager(__name__)
