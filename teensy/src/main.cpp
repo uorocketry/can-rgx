@@ -33,7 +33,7 @@ const uint8_t PHOTODIODE_PORTS[] = {
 const int PHOTODIODE_TRESHOLD = 50;
 
 // Communication settings
-const uint8_t I2C_ADDRESS = 0x2;
+const uint8_t I2C_ADDRESS = 0x3;
 const uint64_t SERIAL_RATE = 9600;
 
 // How long to wait in milliseconds before stopping a motor automatically
