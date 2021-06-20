@@ -56,6 +56,11 @@ void setup() {
         pinMode(i, INPUT_PULLDOWN);
     }
 
+    pinMode(MOTOR1_TOP_LIMIT, INPUT_PULLUP);
+    pinMode(MOTOR1_LOWER_LIMIT, INPUT_PULLUP);
+    pinMode(MOTOR2_TOP_LIMIT, INPUT_PULLUP);
+    pinMode(MOTOR2_LOWER_LIMIT, INPUT_PULLUP);
+
 #ifdef DEBUG
     Serial.begin(SERIAL_RATE);
 #endif
@@ -167,9 +172,17 @@ void loop() {
 void printDebugInfo() {
     static uint32_t lastPrintout;
     if (millis() - lastPrintout <
-        5000) { // Do not print if it has not been more than 5 seconds since the last time we did it
+        500) { // Do not print if it has not been more than 0.5 seconds since the last time we did it
         return;
     }
+
+    PRINTLN("Limit status:")
+    PRINT(MOTOR1_TOP_LIMIT);
+    PRINT(MOTOR1_LOWER_LIMIT);
+    PRINT(MOTOR2_TOP_LIMIT);
+    PRINT(MOTOR2_LOWER_LIMIT);
+    PRINTLN("");
+
     PRINTLN("Motor 1 status");
     PRINT("Moving: ");
     PRINTLN(motor1.isMoving());
