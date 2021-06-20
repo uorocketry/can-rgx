@@ -23,7 +23,7 @@ AVG_CNT_Bit = 7
 FFTAverages = 1
 
 # Pin connected to the BUSY output
-BUSYPin = 24
+BUSYPin = 5
 
 # Registers from the sensor
 PAGE_ID = 0x00
