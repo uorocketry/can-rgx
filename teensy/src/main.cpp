@@ -13,9 +13,9 @@ const uint8_t MOTOR2_IN1 = 11;
 const uint8_t MOTOR2_IN2 = 12;
 
 // Limit switches for the motors
-const uint8_t MOTOR1_TOP_LIMIT = 0;
-const uint8_t MOTOR1_LOWER_LIMIT = 0;
-const uint8_t MOTOR2_TOP_LIMIT = 0;
+const uint8_t MOTOR1_TOP_LIMIT = 3;
+const uint8_t MOTOR1_LOWER_LIMIT = 2;
+const uint8_t MOTOR2_TOP_LIMIT = 1;
 const uint8_t MOTOR2_LOWER_LIMIT = 0;
 
 // Ports for the photodiodes. On a I2C read, the data will be sent in the listed order.
