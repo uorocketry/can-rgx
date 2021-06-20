@@ -1,5 +1,5 @@
 #include <Arduino.h>
-#include <Wire.h>
+#include <i2c_driver_wire.h>
 #include "main.h"
 #include "debug.h"
 #include "motor.h"
@@ -33,7 +33,7 @@ const uint8_t PHOTODIODE_PORTS[] = {
 const int PHOTODIODE_TRESHOLD = 50;
 
 // Communication settings
-const uint8_t I2C_ADDRESS = 0x3;
+const uint8_t I2C_ADDRESS = 0x8;
 const uint64_t SERIAL_RATE = 9600;
 
 // How long to wait in milliseconds before stopping a motor automatically
