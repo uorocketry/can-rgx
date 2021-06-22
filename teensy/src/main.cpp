@@ -21,7 +21,7 @@ const uint8_t MOTOR2_LOWER_LIMIT = 0;
 // Ports for the photodiodes. On a I2C read, the data will be sent in the listed order.
 const uint8_t PHOTODIODE_PORTS[] = {
        22, //MSB
-       12,
+       21,
        20,
        17,
        16,
@@ -66,6 +66,10 @@ void setup() {
 #endif
 }
 
+boolean inline isLimitPressed(uint8_t limitPin) {
+    return digitalRead(limitPin) == LOW;
+}
+
 /**
  * This function expects to receive three bits from I2C.
  * If the 1st bit (MSB) is 1, the action will be a motor control.
@@ -85,14 +89,14 @@ void receiveI2CEvent(int) {
 
             if (motorNumber == 0) {
                 // Only start the motor if the limit is not pressed
-                if (!(motorDirection == MotorDirection::UP && digitalRead(MOTOR1_TOP_LIMIT) == LOW) &&
-                    !(motorDirection == MotorDirection::DOWN && digitalRead(MOTOR1_LOWER_LIMIT) == LOW)) {
+                if ((motorDirection == MotorDirection::UP && !isLimitPressed(MOTOR1_TOP_LIMIT)) ||
+                    (motorDirection == MotorDirection::DOWN && !isLimitPressed(MOTOR1_LOWER_LIMIT))) {
                     motor1.startMotor(motorDirection);
                 }
             } else {
                 // Only start the motor if the limit is not pressed
-                if (!(motorDirection == MotorDirection::UP && digitalRead(MOTOR2_TOP_LIMIT) == LOW) &&
-                    !(motorDirection == MotorDirection::DOWN && digitalRead(MOTOR2_LOWER_LIMIT) == LOW)) {
+                if ((motorDirection == MotorDirection::UP && !isLimitPressed(MOTOR2_TOP_LIMIT)) ||
+                    (motorDirection == MotorDirection::DOWN && !isLimitPressed(MOTOR2_LOWER_LIMIT))) {
                     motor2.startMotor(motorDirection);
                 }
             }
@@ -137,21 +141,19 @@ void loop() {
 #endif
 
     // Check if motor1 has hit a limit
-    if (motor1.isMoving() && motor1.getDirection() == MotorDirection::UP && digitalRead(MOTOR1_TOP_LIMIT) == LOW) {
+    if (motor1.isMoving() && motor1.getDirection() == MotorDirection::UP && isLimitPressed(MOTOR1_TOP_LIMIT)) {
         motor1.stopMotor();
         motor1.clearErrorState();
-    } else if (motor1.isMoving() && motor1.getDirection() == MotorDirection::DOWN &&
-               (digitalRead(MOTOR1_LOWER_LIMIT) == LOW)) {
+    } else if (motor1.isMoving() && motor1.getDirection() == MotorDirection::DOWN && isLimitPressed(MOTOR1_LOWER_LIMIT)) {
         motor1.stopMotor();
         motor1.clearErrorState();
     }
 
     // Check if motor2 has hit a limit
-    if (motor2.isMoving() && motor2.getDirection() == MotorDirection::UP && digitalRead(MOTOR2_TOP_LIMIT) == LOW) {
+    if (motor2.isMoving() && motor2.getDirection() == MotorDirection::UP && isLimitPressed(MOTOR2_TOP_LIMIT)) {
         motor2.stopMotor();
         motor2.clearErrorState();
-    } else if (motor2.isMoving() && motor2.getDirection() == MotorDirection::DOWN &&
-               digitalRead(MOTOR2_LOWER_LIMIT) == LOW) {
+    } else if (motor2.isMoving() && motor2.getDirection() == MotorDirection::DOWN && isLimitPressed(MOTOR2_LOWER_LIMIT)) {
         motor2.stopMotor();
         motor2.clearErrorState();
     }
@@ -176,11 +178,11 @@ void printDebugInfo() {
         return;
     }
 
-    PRINTLN("Limit status:")
-    PRINT(MOTOR1_TOP_LIMIT);
-    PRINT(MOTOR1_LOWER_LIMIT);
-    PRINT(MOTOR2_TOP_LIMIT);
-    PRINT(MOTOR2_LOWER_LIMIT);
+    PRINTLN("Limit status:");
+    PRINT(digitalRead(MOTOR1_TOP_LIMIT));
+    PRINT(digitalRead(MOTOR1_LOWER_LIMIT));
+    PRINT(digitalRead(MOTOR2_TOP_LIMIT));
+    PRINT(digitalRead(MOTOR2_LOWER_LIMIT));
     PRINTLN("");
 
     PRINTLN("Motor 1 status");
