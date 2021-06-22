@@ -12,23 +12,23 @@ class Motor {
 public:
     Motor(uint8_t enPin, uint8_t int1Pin, uint8_t int2Pin, uint8_t topLimit, uint8_t lowerLimit, uint16_t timeout);
 
-    void startMotor(MotorDirection startDirection) volatile;
+    void startMotor(MotorDirection startDirection);
 
-    void stopMotor() volatile;
+    void stopMotor();
 
     void checkState();
 
-    boolean isMoving() const volatile;
+    boolean isMoving() const;
 
-    MotorDirection getDirection() const volatile;
+    MotorDirection getDirection() const;
 
-    unsigned long getRunningTime() const volatile;
+    unsigned long getRunningTime() const;
 
-    bool isInErrorState() const volatile;
+    bool isInErrorState() const;
 
-    void setErrorState() volatile;
+    void setErrorState();
 
-    void clearErrorState() volatile;
+    void clearErrorState();
 
 private:
     const uint8_t enPin;

@@ -14,7 +14,7 @@ Motor::Motor(uint8_t enPin, uint8_t int1Pin, uint8_t int2Pin, uint8_t topLimit, 
     pinMode(int2Pin, OUTPUT);
 }
 
-void Motor::startMotor(MotorDirection startDirection) volatile {
+void Motor::startMotor(MotorDirection startDirection){
     // Don't continue if the limit is pressed in the startDirection we want to go
     if ((startDirection == MotorDirection::UP && isLimitPressed(topLimit)) ||
         (startDirection == MotorDirection::DOWN && isLimitPressed(lowerLimit))) {
@@ -35,7 +35,7 @@ void Motor::startMotor(MotorDirection startDirection) volatile {
     this->startTime = millis();
 }
 
-void Motor::stopMotor() volatile {
+void Motor::stopMotor(){
     digitalWrite(int1Pin, LOW);
     digitalWrite(int2Pin, LOW);
     analogWrite(enPin, 255);
@@ -60,26 +60,26 @@ void Motor::checkState() {
     }
 }
 
-boolean Motor::isMoving() const volatile {
+boolean Motor::isMoving() const{
     return moving;
 }
 
-MotorDirection Motor::getDirection() const volatile {
+MotorDirection Motor::getDirection() const{
     return direction;
 }
 
-unsigned long Motor::getRunningTime() const volatile {
+unsigned long Motor::getRunningTime() const{
     return millis() - startTime;
 }
 
-bool Motor::isInErrorState() const volatile {
+bool Motor::isInErrorState() const{
     return inErrorState;
 }
 
-void Motor::setErrorState() volatile {
+void Motor::setErrorState(){
     inErrorState = true;
 }
 
-void Motor::clearErrorState() volatile {
+void Motor::clearErrorState(){
     inErrorState = false;
 }
