@@ -42,8 +42,8 @@ const volatile uint16_t MOTOR_TIMEOUT_MILLI = 10 * 1000;
 // Store what we should send to the Pi for the i2C value
 I2CSendingValue i2cSendingValue = I2CSendingValue::MOTOR;
 
-Motor motor1(MOTOR1_EN, MOTOR1_IN1, MOTOR1_IN2);
-Motor motor2(MOTOR2_EN, MOTOR2_IN1, MOTOR2_IN2);
+Motor motor1(MOTOR1_EN, MOTOR1_IN1, MOTOR1_IN2, MOTOR1_TOP_LIMIT, MOTOR1_LOWER_LIMIT, MOTOR_TIMEOUT_MILLI);
+Motor motor2(MOTOR2_EN, MOTOR2_IN1, MOTOR2_IN2, MOTOR2_TOP_LIMIT, MOTOR2_LOWER_LIMIT, MOTOR_TIMEOUT_MILLI);
 
 void setup() {
     // Setup the Teensy as an i2c slave
@@ -66,10 +66,6 @@ void setup() {
 #endif
 }
 
-boolean inline isLimitPressed(uint8_t limitPin) {
-    return digitalRead(limitPin) == LOW;
-}
-
 /**
  * This function expects to receive three bits from I2C.
  * If the 1st bit (MSB) is 1, the action will be a motor control.
@@ -88,17 +84,9 @@ void receiveI2CEvent(int) {
             auto motorDirection = static_cast<MotorDirection>(data & 1);
 
             if (motorNumber == 0) {
-                // Only start the motor if the limit is not pressed
-                if ((motorDirection == MotorDirection::UP && !isLimitPressed(MOTOR1_TOP_LIMIT)) ||
-                    (motorDirection == MotorDirection::DOWN && !isLimitPressed(MOTOR1_LOWER_LIMIT))) {
-                    motor1.startMotor(motorDirection);
-                }
+                motor1.startMotor(motorDirection);
             } else {
-                // Only start the motor if the limit is not pressed
-                if ((motorDirection == MotorDirection::UP && !isLimitPressed(MOTOR2_TOP_LIMIT)) ||
-                    (motorDirection == MotorDirection::DOWN && !isLimitPressed(MOTOR2_LOWER_LIMIT))) {
-                    motor2.startMotor(motorDirection);
-                }
+                motor2.startMotor(motorDirection);
             }
         } else { // Change what a i2c read will send
             i2cSendingValue = static_cast<I2CSendingValue>(data & 1);
@@ -139,36 +127,8 @@ void loop() {
 #ifdef DEBUG
     printDebugInfo();
 #endif
-
-    // Check if motor1 has hit a limit
-    if (motor1.isMoving() && motor1.getDirection() == MotorDirection::UP && isLimitPressed(MOTOR1_TOP_LIMIT)) {
-        motor1.stopMotor();
-        motor1.clearErrorState();
-    } else if (motor1.isMoving() && motor1.getDirection() == MotorDirection::DOWN && isLimitPressed(MOTOR1_LOWER_LIMIT)) {
-        motor1.stopMotor();
-        motor1.clearErrorState();
-    }
-
-    // Check if motor2 has hit a limit
-    if (motor2.isMoving() && motor2.getDirection() == MotorDirection::UP && isLimitPressed(MOTOR2_TOP_LIMIT)) {
-        motor2.stopMotor();
-        motor2.clearErrorState();
-    } else if (motor2.isMoving() && motor2.getDirection() == MotorDirection::DOWN && isLimitPressed(MOTOR2_LOWER_LIMIT)) {
-        motor2.stopMotor();
-        motor2.clearErrorState();
-    }
-
-    // Check if the motor1 has been running for longer than MOTOR_TIMEOUT_MILLI
-    if (motor1.isMoving() && motor1.getRunningTime() > MOTOR_TIMEOUT_MILLI) {
-        motor1.stopMotor();
-        motor1.setErrorState();
-    }
-
-    // Check if the motor2 has been running for longer than MOTOR_TIMEOUT_MILLI
-    if (motor2.isMoving() && motor2.getRunningTime() > MOTOR_TIMEOUT_MILLI) {
-        motor2.stopMotor();
-        motor2.setErrorState();
-    }
+	motor1.checkState();
+	motor2.checkState();
 }
 
 void printDebugInfo() {

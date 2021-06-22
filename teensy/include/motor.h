@@ -10,11 +10,13 @@ enum MotorDirection {
 
 class Motor {
 public:
-    Motor(uint8_t enPin, uint8_t int1Pin, uint8_t int2Pin);
+    Motor(uint8_t enPin, uint8_t int1Pin, uint8_t int2Pin, uint8_t topLimit, uint8_t lowerLimit, uint16_t timeout);
 
-    void startMotor(MotorDirection direction) volatile;
+    void startMotor(MotorDirection startDirection) volatile;
 
     void stopMotor() volatile;
+
+    void checkState();
 
     boolean isMoving() const volatile;
 
@@ -32,6 +34,10 @@ private:
     const uint8_t enPin;
     const uint8_t int1Pin;
     const uint8_t int2Pin;
+    const uint8_t topLimit;
+    const uint8_t lowerLimit;
+
+    const uint16_t timeout;
 
     bool moving = false;
     MotorDirection direction = MotorDirection::UP;
