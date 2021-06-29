@@ -66,6 +66,8 @@ void setup() {
 #endif
 }
 
+uint8_t lastRead = 0;
+
 /**
  * This function expects to receive three bits from I2C.
  * If the 1st bit (MSB) is 1, the action will be a motor control.
@@ -78,6 +80,8 @@ void setup() {
 void receiveI2CEvent(int) {
     while (Wire.available()) {
         uint8_t data = Wire.read();
+
+        lastRead = data;
 
         if ((data >> 2) & 1) { // This is a motor control event
             uint8_t motorNumber = (data >> 1) & 1;
@@ -137,6 +141,10 @@ void printDebugInfo() {
         500) { // Do not print if it has not been more than 0.5 seconds since the last time we did it
         return;
     }
+
+    PRINT("Last Read: ");
+    PRINT(lastRead);
+    PRINTLN("");
 
     PRINTLN("Limit status:");
     PRINT(digitalRead(MOTOR1_TOP_LIMIT));
