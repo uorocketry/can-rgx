@@ -5,12 +5,12 @@
 #include "motor.h"
 
 // Ports for the motors.
-const uint8_t MOTOR1_EN = 5;
-const uint8_t MOTOR1_IN1 = 4;
+const uint8_t MOTOR1_EN = 4;
+const uint8_t MOTOR1_IN1 = 5;
 const uint8_t MOTOR1_IN2 = 6;
-const uint8_t MOTOR2_EN = 10;
-const uint8_t MOTOR2_IN1 = 11;
-const uint8_t MOTOR2_IN2 = 12;
+const uint8_t MOTOR2_EN = 7;
+const uint8_t MOTOR2_IN1 = 8;
+const uint8_t MOTOR2_IN2 = 9;
 
 // Limit switches for the motors
 const uint8_t MOTOR1_TOP_LIMIT = 3;
