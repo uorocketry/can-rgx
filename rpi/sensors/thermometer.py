@@ -7,6 +7,10 @@ from rpi.sensors.sensorlogging import SensorLogging
 from rpi.sensors.temp_management import TempManagement
 from shared.customlogging.errormanager import ErrorManager
 
+import RPi.GPIO as GPIO
+RELAY_PIN = 21
+
+
 #thermometer_names = {'28-00000bc725ef': '1',
 #                     '28-00000bc743d3': '2',
 #                     '28-00000bc74b3b': '3',
@@ -136,7 +140,15 @@ class Thermometer(SensorLogging):
     def run(self):
         super().setup_logging("thermometer", ["id", "value"])
 
+        #next lines added for testing only relay and sensors:
         self.start_thermometer_threads()
+        print("Starting Relays. Temperature should start rising.")
+        GPIO.setmode(GPIO.BCM)
+        GPIO.setup(RELAY_PIN, GPIO.OUT)
+        GPIO.output(RELAY_PIN, GPIO.HIGH)  # Turn relay on
+
+        #GPIO.output(RELAY_PIN, GPIO.LOW)  # Turn relay off
 
         # temp management thread
-        threading.Thread(target=TempManagement.setup(self)).run()
+        #next line commented out for testing only relay and sensors:
+        #threading.Thread(target=TempManagement.setup(self)).run()
