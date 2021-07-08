@@ -26,6 +26,7 @@ class PID:
         self.Kp = P
         self.Ki = I
         self.Kd = D
+        self.SetPoint = SetPoint
         self.sample_time = 0.00
         self.current_time = current_time if current_time is not None else time.time()
         self.last_time = self.current_time
@@ -59,7 +60,7 @@ class PID:
         sleep(iteration_time)
         }
         """
-        self.error = SetPoint - feedback_value  # desired - actual
+        self.error = self.SetPoint - feedback_value  # desired - actual
         self.current_time = current_time if current_time is not None else time.time()
         delta_time = self.current_time - self.last_time
         delta_error = self.error - self.last_error
@@ -140,7 +141,7 @@ class TempManagement(threading.Thread):
         # GPIO.setmode(GPIO.BCM)
         # GPIO.setup(RELAY_PIN, GPIO.OUT)
         # self.call_pid(p, i, d, L=10)
-        feedback = self.get_current_avg_temp()
+        # feedback = self.get_current_avg_temp()
 
     @staticmethod
     def get_current_avg_temp():
@@ -186,9 +187,9 @@ class TempManagement(threading.Thread):
             self.heater_off()
             logger.debug("Turning heater off")
         else:
+            self.heater_off()
             em.error("Unprecedented temperature. Hotter than 35 C. No means of mitigation.", "HIGH_TEMP")
 
-        time.sleep(0.02)
         return feedback
 
     def run(self):
