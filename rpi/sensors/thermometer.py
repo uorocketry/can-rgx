@@ -151,4 +151,4 @@ class Thermometer(SensorLogging):
 
         # temp management thread
         #next line commented out for testing only relay and sensors:
-        #threading.Thread(target=TempManagement.setup(self)).run()
+        threading.Thread(target=TempManagement.setup(self)).run()

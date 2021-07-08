@@ -7,7 +7,6 @@ import RPi.GPIO as GPIO
 import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
 
-from rpi.sensors.thermometer import ThermometerList
 # desired temp
 from shared.customlogging.errormanager import ErrorManager
 
@@ -145,6 +144,8 @@ class TempManagement(threading.Thread):
 
     @staticmethod
     def get_current_avg_temp():
+        from rpi.sensors.thermometer import ThermometerList
+
         # Get the list of temperatures from the thermometer thread
         current_temps = ThermometerList.get_temperature_data(sensor_id_list)
 
