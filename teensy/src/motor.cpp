@@ -4,7 +4,14 @@
 const uint8_t PWM_DUTY_CYCLE = 255;
 
 boolean inline isLimitPressed(uint8_t limitPin) {
-    return digitalRead(limitPin) == LOW;
+    // Check the limit 10 times to fix a bug we are having with false positives when the motors turn on
+    for (int i = 0; i < 10; i ++) {
+        if (digitalRead(limitPin) == HIGH) {
+            return false;
+        }
+    }
+
+    return true;
 }
 
 Motor::Motor(uint8_t enPin, uint8_t int1Pin, uint8_t int2Pin, uint8_t topLimit, uint8_t lowerLimit, u_int16_t timeout) 
