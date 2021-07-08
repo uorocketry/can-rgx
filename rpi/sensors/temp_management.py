@@ -122,6 +122,8 @@ class PID:
 class TempManagement(threading.Thread):
     def __init__(self):
         super().__init__()
+        self.em = ErrorManager(__name__)
+
         self.feedback_list = []
         self.time_list = []
         self.setpoint_list = []
@@ -136,35 +138,37 @@ class TempManagement(threading.Thread):
         self.pid = PID(P, I, D, SetPoint)
         self.pid.setSampleTime(0.05)
 
+        GPIO.setmode(GPIO.BCM)
+        GPIO.setup(RELAY_PIN, GPIO.OUT)
+
         # uncomment following three lines and delete fourth when relay is attached to pi
         # GPIO.setmode(GPIO.BCM)
         # GPIO.setup(RELAY_PIN, GPIO.OUT)
         # self.call_pid(p, i, d, L=10)
         # feedback = self.get_current_avg_temp()
 
-    @staticmethod
-    def get_current_avg_temp():
+    def get_current_avg_temp(self):
         from rpi.sensors.thermometer import ThermometerList
 
         # Get the list of temperatures from the thermometer thread
-        current_temps = ThermometerList.get_temperature_data(sensor_id_list)
+        current_temps = ThermometerList.get_temperature_data_list(sensor_id_list)
 
         sum = 0
         count = 0
         for key, value in current_temps.items():
             # handle 'none' passed in for cases where sensor is disconnected
             try:
-                print(value)
                 sum += value
                 count += 1
+
+                self.em.resolve(f"Temperature sensor {key} now providing acceptable data", key, True)
             except TypeError:
-                print(f"Not all sensors are providing acceptable temperature data. "
-                      f"Cannot perform designated operation on sensor: ({key} | value: '{value}') - Discarded")
+                self.em.error(f"Not all sensors are providing acceptable temperature data. "
+                      f"Cannot perform designated operation on sensor: ({key} | value: '{value}') - Discarded", key)
                 pass
 
-        avg_temp = sum / count
+        avg_temp = sum / count if count != 0 else 0
 
-        print(f'Current average temperature : {avg_temp}')
         return avg_temp
 
     def heater_on(self):
@@ -195,9 +199,10 @@ class TempManagement(threading.Thread):
 
     def run(self):
         while True:
+            pass
             self.pid_loop()
 
-    def plot(self):
+    def plot(self, i):
         feedback = self.pid_loop()
 
         self.feedback_list.append(feedback)
@@ -215,7 +220,7 @@ class TempManagement(threading.Thread):
         plt.grid(True)
 
     def start_plotting(self):
-        self.ani = FuncAnimation(plt.gcf(), self.pid_loop, interval=1000)
+        self.ani = FuncAnimation(plt.gcf(), self.plot, interval=1000)
         plt.show()
 
 

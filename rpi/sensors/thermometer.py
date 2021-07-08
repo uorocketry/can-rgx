@@ -115,12 +115,16 @@ class ThermometerList(threading.Thread):
         :return: A map with the sensor name as the key and the temperature as the value. If a sensor doesn't exist,
         None will be the value for that sensor
         """
-        with ThermometerList.thermometer_data_lock:
-            print(dict((k, ThermometerList.thermometer_data[k] if k in ThermometerList.thermometer_data else None)
-                        for k in names))
-            return dict((k, ThermometerList.thermometer_data[k] if k in ThermometerList.thermometer_data else None)
-                        for k in names)
+        data = dict()
 
+        with ThermometerList.thermometer_data_lock:
+            for k in names:
+                if k in ThermometerList.thermometer_data:
+                    data[k] = ThermometerList.thermometer_data[k]
+                else:
+                    data[k] = None
+
+        return data
 
 
 class Thermometer(SensorLogging):
@@ -140,15 +144,17 @@ class Thermometer(SensorLogging):
     def run(self):
         super().setup_logging("thermometer", ["id", "value"])
 
-        #next lines added for testing only relay and sensors:
         self.start_thermometer_threads()
-        print("Starting Relays. Temperature should start rising.")
-        GPIO.setmode(GPIO.BCM)
-        GPIO.setup(RELAY_PIN, GPIO.OUT)
-        GPIO.output(RELAY_PIN, GPIO.HIGH)  # Turn relay on
+
+        # next lines added for testing only relay and sensors:
+        # print("Starting Relays. Temperature should start rising.")
+        # GPIO.setmode(GPIO.BCM)
+        # GPIO.setup(RELAY_PIN, GPIO.OUT)
+        # GPIO.output(RELAY_PIN, GPIO.HIGH)  # Turn relay on
 
         #GPIO.output(RELAY_PIN, GPIO.LOW)  # Turn relay off
 
         # temp management thread
         #next line commented out for testing only relay and sensors:
-        threading.Thread(target=TempManagement.setup(self)).run()
+        tempManage = TempManagement()
+        tempManage.start()
