@@ -6,7 +6,6 @@ from rpi.logging.listener import LoggingListener
 from rpi.network.server import Server
 from rpi.sensors.accelerometer import Accelerometer
 from rpi.sensors.pressure import Pressure
-from rpi.sensors.temp_management import TempManagement
 from rpi.sensors.thermometer import Thermometer
 from rpi.sensors.vibration import Vibration
 from shared.customlogging.errormanager import ErrorManager
@@ -25,7 +24,7 @@ if __name__ == '__main__':
 
     # Next lines starts all of the other processes and monitor them in case they quit
     #processClassesList = [Server, Vibration, Thermometer, Pressure, Accelerometer]
-    processClassesList = [Thermometer, TempManagement]
+    processClassesList = [Thermometer]
     processes = dict()
 
     for processClass in processClassesList:

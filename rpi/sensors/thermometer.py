@@ -4,6 +4,7 @@ import threading
 import time
 
 from rpi.sensors.sensorlogging import SensorLogging
+from rpi.sensors.temp_management import TempManagement
 from shared.customlogging.errormanager import ErrorManager
 
 import RPi.GPIO as GPIO
@@ -147,3 +148,7 @@ class Thermometer(SensorLogging):
         GPIO.output(RELAY_PIN, GPIO.HIGH)  # Turn relay on
 
         #GPIO.output(RELAY_PIN, GPIO.LOW)  # Turn relay off
+
+        # temp management thread
+        #next line commented out for testing only relay and sensors:
+        #threading.Thread(target=TempManagement.setup(self)).run()
