@@ -4,8 +4,8 @@
 const uint8_t PWM_DUTY_CYCLE = 255;
 
 boolean isLimitPressed(uint8_t limitPin) {
-    // Check the limit 10 times to fix a bug we are having with false positives when the motors turn on
-    for (int i = 0; i < 10; i ++) {
+    // Check the limit 100 times to fix a bug we are having with false positives when the motors turn on
+    for (int i = 0; i < 100; i ++) {
         if (digitalRead(limitPin) == HIGH) {
             return false;
         }
