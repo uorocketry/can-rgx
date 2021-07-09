@@ -49,5 +49,7 @@ private:
     bool inErrorState = false;
 };
 
+bool isLimitPressed(uint8_t limitPin);
+
 
 #endif //ARDUINO_MOTOR_H

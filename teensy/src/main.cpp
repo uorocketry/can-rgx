@@ -147,10 +147,10 @@ void printDebugInfo() {
     PRINTLN("");
 
     PRINTLN("Limit status:");
-    PRINT(digitalRead(MOTOR1_TOP_LIMIT));
-    PRINT(digitalRead(MOTOR1_LOWER_LIMIT));
-    PRINT(digitalRead(MOTOR2_TOP_LIMIT));
-    PRINT(digitalRead(MOTOR2_LOWER_LIMIT));
+    PRINT(isLimitPressed(MOTOR1_TOP_LIMIT));
+    PRINT(isLimitPressed(MOTOR1_LOWER_LIMIT));
+    PRINT(isLimitPressed(MOTOR2_TOP_LIMIT));
+    PRINT(isLimitPressed(MOTOR2_LOWER_LIMIT));
     PRINTLN("");
 
     PRINTLN("Motor 1 status");

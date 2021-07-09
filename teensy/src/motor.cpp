@@ -3,7 +3,7 @@
 // The duty cycle when the motor is moving. When stopped, it will always be at the maximum (255)
 const uint8_t PWM_DUTY_CYCLE = 255;
 
-boolean inline isLimitPressed(uint8_t limitPin) {
+boolean isLimitPressed(uint8_t limitPin) {
     // Check the limit 10 times to fix a bug we are having with false positives when the motors turn on
     for (int i = 0; i < 10; i ++) {
         if (digitalRead(limitPin) == HIGH) {
