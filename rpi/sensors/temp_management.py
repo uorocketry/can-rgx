@@ -10,7 +10,7 @@ from matplotlib.animation import FuncAnimation
 # desired temp
 from shared.customlogging.errormanager import ErrorManager
 
-SetPoint = 35
+SetPoint = 37
 
 # relay pin on pi
 RELAY_PIN = 21
@@ -200,6 +200,7 @@ class TempManagement(threading.Thread):
     def run(self):
         while True:
             pass
+            #comment out next line after for plot testing
             self.pid_loop()
 
     def plot(self, i):
