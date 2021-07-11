@@ -158,3 +158,7 @@ class Thermometer(SensorLogging):
         #next line commented out for testing only relay and sensors:
         tempManage = TempManagement()
         tempManage.start()
+
+        # This thread needs to be kept alive to assure the logger works correctly
+        while True:
+            pass
