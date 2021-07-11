@@ -79,7 +79,7 @@ class ThermometerList(threading.Thread):
                 ThermometerList.__update_temperature_data(self.name, temperature)
 
                 # If we had a previous error, resolve it
-                em.resolve("Error has been cleared for {}".format(self.name), self.name, False)
+                em.resolve("Error has been cleared for temperature sensor {}".format(self.name), self.name, False)
             except InvalidTemperatureDataError:
                 em.error(
                     "Temperature sensor {} is returning invalid data. It may have been disconnected.".format(self.name),
