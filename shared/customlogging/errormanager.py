@@ -117,6 +117,6 @@ class ErrorManager:
         """
         if error_id in self.errors:
             self.errors.pop(error_id)
-            logging.info(message, extra={'errorID': error_id + self.id_append})
+            self.logger.info(message, extra={'errorID': error_id + self.id_append})
         elif always_send:
-            logging.info(message, extra={'errorID': error_id + self.id_append})
+            self.logger.info(message, extra={'errorID': error_id + self.id_append})
