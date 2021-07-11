@@ -161,7 +161,7 @@ class TempManagement(threading.Thread):
                 sum += value
                 count += 1
 
-                self.em.resolve(f"Temperature sensor {key} now providing acceptable data", key, True)
+                self.em.resolve(f"Temperature sensor {key} now providing acceptable data", key, False)
             except TypeError:
                 self.em.error(f"Not all sensors are providing acceptable temperature data. "
                       f"Cannot perform designated operation on sensor: ({key} | value: '{value}') - Discarded", key)
