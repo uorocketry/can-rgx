@@ -141,6 +141,9 @@ class TempManagement(threading.Thread):
         GPIO.setmode(GPIO.BCM)
         GPIO.setup(RELAY_PIN, GPIO.OUT)
 
+        # Logger used to eventually send the current state to the laptop
+        self.stateLogger = logging.getLogger('sensorlog.temp_management')
+
         # uncomment following three lines and delete fourth when relay is attached to pi
         # GPIO.setmode(GPIO.BCM)
         # GPIO.setup(RELAY_PIN, GPIO.OUT)
@@ -172,9 +175,11 @@ class TempManagement(threading.Thread):
         return avg_temp
 
     def heater_on(self):
+        self.stateLogger.info("Heater on", extra={'heaterOn': True})
         GPIO.output(RELAY_PIN, GPIO.HIGH)  # Turn relay on
 
     def heater_off(self):
+        self.stateLogger.info("Heater false", extra={'heaterOn': False})
         GPIO.output(RELAY_PIN, GPIO.LOW)  # Turn relay off
 
     def pid_loop(self):
