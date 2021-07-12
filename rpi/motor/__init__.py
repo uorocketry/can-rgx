@@ -19,7 +19,7 @@ class MotorControl:
 
     def __start_motor(self, motor_number, motor_direction):
         logger = logging.getLogger(__name__)
-        logger.info("Starting motor {}".format(motor_number + 1))
+        logger.debug("Starting motor {}".format(motor_number + 1))
         try:
             self.teensy.activate_motor(motor_number, motor_direction)
             self.em.resolve("Started motor {}".format(motor_number + 1), f"motor_{motor_number}_start")
