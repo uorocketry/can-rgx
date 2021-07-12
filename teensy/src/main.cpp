@@ -5,12 +5,12 @@
 #include "motor.h"
 
 // Ports for the motors.
-const uint8_t MOTOR1_EN = 5;
-const uint8_t MOTOR1_IN1 = 4;
+const uint8_t MOTOR1_EN = 4;
+const uint8_t MOTOR1_IN1 = 5;
 const uint8_t MOTOR1_IN2 = 6;
-const uint8_t MOTOR2_EN = 10;
-const uint8_t MOTOR2_IN1 = 11;
-const uint8_t MOTOR2_IN2 = 12;
+const uint8_t MOTOR2_EN = 7;
+const uint8_t MOTOR2_IN1 = 8;
+const uint8_t MOTOR2_IN2 = 9;
 
 // Limit switches for the motors
 const uint8_t MOTOR1_TOP_LIMIT = 3;
@@ -21,7 +21,7 @@ const uint8_t MOTOR2_LOWER_LIMIT = 0;
 // Ports for the photodiodes. On a I2C read, the data will be sent in the listed order.
 const uint8_t PHOTODIODE_PORTS[] = {
        22, //MSB
-       12,
+       21,
        20,
        17,
        16,
@@ -37,13 +37,13 @@ const uint8_t I2C_ADDRESS = 0x8;
 const uint64_t SERIAL_RATE = 9600;
 
 // How long to wait in milliseconds before stopping a motor automatically
-const volatile uint16_t MOTOR_TIMEOUT_MILLI = 10 * 1000;
+const uint16_t MOTOR_TIMEOUT_MILLI = 10 * 1000;
 
 // Store what we should send to the Pi for the i2C value
 I2CSendingValue i2cSendingValue = I2CSendingValue::MOTOR;
 
-Motor motor1(MOTOR1_EN, MOTOR1_IN1, MOTOR1_IN2);
-Motor motor2(MOTOR2_EN, MOTOR2_IN1, MOTOR2_IN2);
+Motor motor1(MOTOR1_EN, MOTOR1_IN1, MOTOR1_IN2, MOTOR1_TOP_LIMIT, MOTOR1_LOWER_LIMIT, MOTOR_TIMEOUT_MILLI);
+Motor motor2(MOTOR2_EN, MOTOR2_IN1, MOTOR2_IN2, MOTOR2_TOP_LIMIT, MOTOR2_LOWER_LIMIT, MOTOR_TIMEOUT_MILLI);
 
 void setup() {
     // Setup the Teensy as an i2c slave
@@ -66,6 +66,8 @@ void setup() {
 #endif
 }
 
+uint8_t lastRead = 0;
+
 /**
  * This function expects to receive three bits from I2C.
  * If the 1st bit (MSB) is 1, the action will be a motor control.
@@ -79,22 +81,16 @@ void receiveI2CEvent(int) {
     while (Wire.available()) {
         uint8_t data = Wire.read();
 
+        lastRead = data;
+
         if ((data >> 2) & 1) { // This is a motor control event
             uint8_t motorNumber = (data >> 1) & 1;
             auto motorDirection = static_cast<MotorDirection>(data & 1);
 
             if (motorNumber == 0) {
-                // Only start the motor if the limit is not pressed
-                if (!(motorDirection == MotorDirection::UP && digitalRead(MOTOR1_TOP_LIMIT) == LOW) &&
-                    !(motorDirection == MotorDirection::DOWN && digitalRead(MOTOR1_LOWER_LIMIT) == LOW)) {
-                    motor1.startMotor(motorDirection);
-                }
+                motor1.startMotor(motorDirection);
             } else {
-                // Only start the motor if the limit is not pressed
-                if (!(motorDirection == MotorDirection::UP && digitalRead(MOTOR2_TOP_LIMIT) == LOW) &&
-                    !(motorDirection == MotorDirection::DOWN && digitalRead(MOTOR2_LOWER_LIMIT) == LOW)) {
-                    motor2.startMotor(motorDirection);
-                }
+                motor2.startMotor(motorDirection);
             }
         } else { // Change what a i2c read will send
             i2cSendingValue = static_cast<I2CSendingValue>(data & 1);
@@ -135,38 +131,8 @@ void loop() {
 #ifdef DEBUG
     printDebugInfo();
 #endif
-
-    // Check if motor1 has hit a limit
-    if (motor1.isMoving() && motor1.getDirection() == MotorDirection::UP && digitalRead(MOTOR1_TOP_LIMIT) == LOW) {
-        motor1.stopMotor();
-        motor1.clearErrorState();
-    } else if (motor1.isMoving() && motor1.getDirection() == MotorDirection::DOWN &&
-               (digitalRead(MOTOR1_LOWER_LIMIT) == LOW)) {
-        motor1.stopMotor();
-        motor1.clearErrorState();
-    }
-
-    // Check if motor2 has hit a limit
-    if (motor2.isMoving() && motor2.getDirection() == MotorDirection::UP && digitalRead(MOTOR2_TOP_LIMIT) == LOW) {
-        motor2.stopMotor();
-        motor2.clearErrorState();
-    } else if (motor2.isMoving() && motor2.getDirection() == MotorDirection::DOWN &&
-               digitalRead(MOTOR2_LOWER_LIMIT) == LOW) {
-        motor2.stopMotor();
-        motor2.clearErrorState();
-    }
-
-    // Check if the motor1 has been running for longer than MOTOR_TIMEOUT_MILLI
-    if (motor1.isMoving() && motor1.getRunningTime() > MOTOR_TIMEOUT_MILLI) {
-        motor1.stopMotor();
-        motor1.setErrorState();
-    }
-
-    // Check if the motor2 has been running for longer than MOTOR_TIMEOUT_MILLI
-    if (motor2.isMoving() && motor2.getRunningTime() > MOTOR_TIMEOUT_MILLI) {
-        motor2.stopMotor();
-        motor2.setErrorState();
-    }
+	motor1.checkState();
+	motor2.checkState();
 }
 
 void printDebugInfo() {
@@ -176,11 +142,15 @@ void printDebugInfo() {
         return;
     }
 
-    PRINTLN("Limit status:")
-    PRINT(MOTOR1_TOP_LIMIT);
-    PRINT(MOTOR1_LOWER_LIMIT);
-    PRINT(MOTOR2_TOP_LIMIT);
-    PRINT(MOTOR2_LOWER_LIMIT);
+    PRINT("Last Read: ");
+    PRINT(lastRead);
+    PRINTLN("");
+
+    PRINTLN("Limit status:");
+    PRINT(isLimitPressed(MOTOR1_TOP_LIMIT));
+    PRINT(isLimitPressed(MOTOR1_LOWER_LIMIT));
+    PRINT(isLimitPressed(MOTOR2_TOP_LIMIT));
+    PRINT(isLimitPressed(MOTOR2_LOWER_LIMIT));
     PRINTLN("");
 
     PRINTLN("Motor 1 status");

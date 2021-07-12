@@ -10,28 +10,34 @@ enum MotorDirection {
 
 class Motor {
 public:
-    Motor(uint8_t enPin, uint8_t int1Pin, uint8_t int2Pin);
+    Motor(uint8_t enPin, uint8_t int1Pin, uint8_t int2Pin, uint8_t topLimit, uint8_t lowerLimit, uint16_t timeout);
 
-    void startMotor(MotorDirection direction) volatile;
+    void startMotor(MotorDirection startDirection);
 
-    void stopMotor() volatile;
+    void stopMotor();
 
-    boolean isMoving() const volatile;
+    void checkState();
 
-    MotorDirection getDirection() const volatile;
+    boolean isMoving() const;
 
-    unsigned long getRunningTime() const volatile;
+    MotorDirection getDirection() const;
 
-    bool isInErrorState() const volatile;
+    unsigned long getRunningTime() const;
 
-    void setErrorState() volatile;
+    bool isInErrorState() const;
 
-    void clearErrorState() volatile;
+    void setErrorState();
+
+    void clearErrorState();
 
 private:
     const uint8_t enPin;
     const uint8_t int1Pin;
     const uint8_t int2Pin;
+    const uint8_t topLimit;
+    const uint8_t lowerLimit;
+
+    const uint16_t timeout;
 
     bool moving = false;
     MotorDirection direction = MotorDirection::UP;
@@ -42,6 +48,8 @@ private:
     // instead of the limit switch, possibly indicating a failure of the limit switch
     bool inErrorState = false;
 };
+
+bool isLimitPressed(uint8_t limitPin);
 
 
 #endif //ARDUINO_MOTOR_H

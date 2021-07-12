@@ -33,5 +33,5 @@ class Teensy:
 
     def get_led_state(self):
         with self.lock:
-            self.bus.write_byte(TEENSY_ADDRESS, I2CReadState.LED & 0b11)  # Tell the Teensy to return motor info
+            self.bus.write_byte(TEENSY_ADDRESS, I2CReadState.LED & 0b11)  # Tell the Teensy to return led info
             return self.bus.read_byte(TEENSY_ADDRESS)
