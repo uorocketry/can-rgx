@@ -21,6 +21,7 @@ class LEDs:
         # Use a lock to access the DMX Controller. Not clear if this is needed, but better be safe than worry.
         self.lock = threading.Lock()
         self.teensy = Teensy()
+        self.em = ErrorManager(__name__)
 
     def __activate_led(self, led_number):
         with self.lock:
@@ -30,12 +31,18 @@ class LEDs:
             time.sleep(5)
 
             # Use the photodiode to verify if the LED turned on
-            led_state = self.teensy.get_led_state()
-            logger.debug("LED State: {}".format(led_state + 1))
-            if (led_state << led_number) & 0b1 == 1:
-                logger.info("Successfully verified LED {} turned on".format(led_number + 1))
-            else:
-                logger.error("LED {} did not turn on".format(led_number + 1))
+            try:
+                led_state = self.teensy.get_led_state()
+                logger.debug("LED State: {}".format(led_state + 1))
+                if (led_state << led_number) & 0b1 == 1:
+                    self.em.resolve("Successfully verified LED {} turned on".format(led_number + 1), led_number)
+                else:
+                    self.em.error("LED {} did not turn on".format(led_number + 1), led_number)
+
+                # Resolve the error if we threw earlier
+                self.em.resolve("Could not retrieve LED state from the Teensy", "teensy", False)
+            except Exception as e:
+                self.em.error("Could not check LED State from the Teensy: {}".format(e), "teensy")
 
             self.dmx.set_channel(led_number, 0)
             logger.debug("LED {} has finished activating".format(led_number + 1))
