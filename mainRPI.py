@@ -24,7 +24,7 @@ if __name__ == '__main__':
 
     # Next lines starts all of the other processes and monitor them in case they quit
     #processClassesList = [Server, Vibration, Thermometer, Pressure, Accelerometer]
-    processClassesList = [Thermometer]
+    processClassesList = [Server, Thermometer]
     processes = dict()
 
     for processClass in processClassesList:
