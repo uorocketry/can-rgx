@@ -6,10 +6,25 @@ import tkinter.messagebox
 
 import laptop.gui.controlgui as controlgui
 import laptop.gui.logginggui as logginggui
+from laptop.gui.sensorgui import SensorGUI
 from laptop.network.loggingreceiver import logging_receive_forever
 from laptop.network.pingchecker import PingChecker
 from shared.customlogging.filter import SensorFilter
+from shared.customlogging.formatter import CSVFormatter
 from shared.customlogging.handler import MakeFileHandler
+
+
+def create_sensorlog_handler(name):
+    logging.getLogger(__name__).debug(f"Adding handler {name} for sensor logging")
+    sensorlogger = logging.getLogger(name)
+
+    splitName = name.split('.')
+
+    csvHandler = MakeFileHandler('laptop', 'sensor', splitName[1], 'csv')
+    csvHandler.setFormatter(CSVFormatter())
+    sensorlogger.addHandler(csvHandler)
+    sensorlogger.setLevel(logging.INFO)
+
 
 # Setting up logging to console and file
 logger = logging.getLogger()
@@ -31,6 +46,11 @@ fileHandler.setFormatter(loggingFormat)
 fileHandler.addFilter(loggingFilter)
 logger.addHandler(fileHandler)
 
+# Setup sensor logging. Each new sensor need to be added here
+create_sensorlog_handler("sensorlog.vibration")
+create_sensorlog_handler("sensorlog.thermometer")
+create_sensorlog_handler("sensorlog.pressure")
+
 # Setting up of the GUI
 root = tk.Tk()
 
@@ -44,6 +64,10 @@ guiHandler = logginggui.LoggingGUIHandler(logGUI, controlGUI.status)
 guiHandler.setFormatter(loggingFormatWindow)
 guiHandler.addFilter(loggingFilter)
 logger.addHandler(guiHandler)
+
+# Setup the sensor window
+window3 = tk.Toplevel(root)
+sensorGUI = SensorGUI(window3)
 
 # Start the log receiver
 t = threading.Thread(target=logging_receive_forever)
@@ -63,5 +87,6 @@ def close_application():
 
 root.protocol("WM_DELETE_WINDOW", close_application)
 window2.protocol("WM_DELETE_WINDOW", close_application)
+window3.protocol("WM_DELETE_WINDOW", close_application)
 
 root.mainloop()
