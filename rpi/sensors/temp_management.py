@@ -178,7 +178,6 @@ class TempManagement(threading.Thread):
         GPIO.output(RELAY_PIN, GPIO.LOW)  # Turn relay off
 
     def pid_loop(self):
-        em = ErrorManager(__name__)
         logger = logging.getLogger(__name__)
 
         # get feedback aka avg (current) temperature
@@ -193,7 +192,13 @@ class TempManagement(threading.Thread):
             logger.debug("Turning heater off")
         else:
             self.heater_off()
-            em.error("Unprecedented temperature. Hotter than 35 C. No means of mitigation.", "HIGH_TEMP")
+            logger.debug("Turning heater off")
+
+        if feedback > (SetPoint + 2):
+            self.em.error(f"Temperature at {feedback}. Please cool down system.", "HIGH_TEMP")
+        else:
+            self.em.resolve(f"Temperature now at {feedback}", "HIGH_TEMP", False)
+
 
         return feedback
 
