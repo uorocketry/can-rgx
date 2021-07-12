@@ -52,11 +52,11 @@ class StatusFrame(tk.Frame):
             if errorLevel > highestlevel:
                 highestlevel = errorLevel
 
-                if errorLevel == logging.WARNING:
-                    highestcolor = "blue"
-                elif errorLevel >= logging.ERROR:
-                    highestcolor = "red"
-                    highestflash = True
+        if highestlevel == logging.WARNING:
+            highestcolor = "blue"
+        elif highestlevel >= logging.ERROR:
+            highestcolor = "red"
+            highestflash = True
 
         self.color = highestcolor
         self.currentlevel = highestlevel
@@ -64,6 +64,8 @@ class StatusFrame(tk.Frame):
         if not self.flash and highestflash:
             self.flash = True
             self.parent.after(500, self.flash_status, 0)
+        elif not highestflash:
+            self.flash = False
 
         return clearedError
 
