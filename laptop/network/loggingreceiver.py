@@ -87,8 +87,8 @@ class LogRecordStreamHandler(socketserver.StreamRequestHandler):
             except (NetworkError, ConnectionResetError):
                 error_manager.warning("Network error. Did the client close the connection?", "loggingException")
                 connected = False
-            except:
-                error_manager.error("Error while receiving log from client", "loggingException")
+            except Exception as e:
+                error_manager.error("Error while receiving log from client: {}".format(e), "loggingException")
                 connected = False
 
         logConnector = LogRecordConnector()
@@ -100,6 +100,7 @@ class LogRecordStreamHandler(socketserver.StreamRequestHandler):
         # Check if this is for a sensor logs and that is has a handler. If not, raise an error
         if record.name.startswith('sensorlog') and len(logger.handlers) == 0:
             logging.getLogger(__name__).error("Unhandled sensor logger: " + record.name)
+            return
 
         logger.handle(record)
 
