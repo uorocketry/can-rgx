@@ -6,7 +6,7 @@ import threading
 
 from smbus import SMBus
 
-TEENSY_ADDRESS = 2
+TEENSY_ADDRESS = 0x8
 
 
 # These value are sent to the Teensy to select what it will return on a read operation
