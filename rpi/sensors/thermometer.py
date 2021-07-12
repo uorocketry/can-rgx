@@ -154,8 +154,8 @@ class Thermometer(SensorLogging):
 
         #GPIO.output(RELAY_PIN, GPIO.LOW)  # Turn relay off
 
-        # temp management thread
-        #next line commented out for testing only relay and sensors:
+        # Temperature Management Thread
+        time.sleep(10)  # Give some time to the temperature sensors to start returning data
         tempManage = TempManagement()
         tempManage.start()
 
