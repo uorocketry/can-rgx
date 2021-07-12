@@ -80,8 +80,11 @@ class RequestHandler(socketserver.StreamRequestHandler):
         except:
             logger.exception("Major error while handling client connection")
         else:
-            # noinspection PyUnresolvedReferences
-            message_handler.process_message(body, self.client_address)
+            try:
+                # noinspection PyUnresolvedReferences
+                message_handler.process_message(body, self.client_address)
+            except Exception as e:
+                logger.error(f"Error processing client message: {e}")
 
 
 class Server(multiprocessing.Process):
