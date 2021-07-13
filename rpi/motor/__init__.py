@@ -1,15 +1,9 @@
 import logging
 import threading
 import time
-from enum import IntEnum
 
 from rpi.teensy import Teensy
 from shared.customlogging.errormanager import ErrorManager
-
-
-class MotorDirection(IntEnum):
-    UP = 0
-    DOWN = 1
 
 
 class MotorControl:
