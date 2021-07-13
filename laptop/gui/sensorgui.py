@@ -29,7 +29,8 @@ class HeaterFrame(tk.Frame, logging.Handler):
 
 class ThermometerFrame(tk.Frame, logging.Handler):
     def __init__(self, parent):
-        super().__init__(parent, highlightthickness=1, highlightbackground="black")
+        tk.Frame.__init__(self, parent, highlightthickness=1, highlightbackground="black")
+        logging.Handler.__init__(self)
 
         self.title = tk.Label(self, text="Average Temperature", font=("Arial", 18))
         self.title.grid(row=0, column=0)
@@ -55,9 +56,19 @@ class ThermometerFrame(tk.Frame, logging.Handler):
         self.update_value()
 
     def update_value(self):
-        average_temp = sum(self.temperature_data.values()) / float(len(self.temperature_data))
+        sum = 0.0
+        count = 0.0
+        for i in self.temperature_data.values():
+            try:
+                sum += i
+                count += 1
+            except:
+                pass
 
-        self.value.config(text=average_temp)
+        if count > 0:
+            average_temp = sum / count
+
+            self.value.config(text=average_temp)
 
 
 class SensorGUI:
