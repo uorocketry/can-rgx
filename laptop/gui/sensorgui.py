@@ -35,20 +35,6 @@ class ThermometerFrame(tk.Frame, logging.Handler):
         self.value.config(text=average_temp)
 
 
-class VibrationFrame(tk.Frame):
-    def __init__(self, parent):
-        super().__init__(parent, highlightthickness=1, highlightbackground="black")
-
-        self.label = tk.Label(self, text="Maximum Vibration", font=("Arial", 18))
-        self.label.grid(row=0, column=0)
-
-        self.label = tk.Label(self, text="INVALID", font=("Arial", 18))
-        self.label.grid(row=1, column=0)
-
-        self.grid_rowconfigure(0, weight=1)
-        self.grid_rowconfigure(1, weight=1)
-
-
 class SensorGUI:
     def __init__(self, master):
         self.master = master
