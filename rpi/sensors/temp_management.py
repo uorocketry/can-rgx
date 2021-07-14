@@ -185,14 +185,13 @@ class TempManagement(threading.Thread):
 
     def heater_off(self):
         if time.time() - self.lastStateSend > 1:
-            self.stateLogger.info("Heater off", extra={'heaterOn': True})
+            self.stateLogger.info("Heater off", extra={'heaterOn': False})
             self.lastStateSend = time.time()
 
         GPIO.output(RELAY_PIN, GPIO.LOW)  # Turn relay off
 
     def pid_loop(self):
         time.sleep(1)
-        logger = logging.getLogger(__name__)
 
         # get feedback aka avg (current) temperature
         feedback = self.get_current_avg_temp()
