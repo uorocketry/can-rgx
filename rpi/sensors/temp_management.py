@@ -218,7 +218,6 @@ class TempManagement(threading.Thread):
 
     def run(self):
         while True:
-            pass
             #comment out next line after for plot testing
             self.pid_loop()
 

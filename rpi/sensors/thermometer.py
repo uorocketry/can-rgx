@@ -69,6 +69,7 @@ class ThermometerList(threading.Thread):
     def run(self):
         em = ErrorManager(__name__)
         while True:
+            time.sleep(1)
             try:
                 temperature = self.__read()
 
@@ -161,4 +162,4 @@ class Thermometer(SensorLogging):
 
         # This thread needs to be kept alive to assure the logger works correctly
         while True:
-            pass
+            time.sleep(10000)  # Better on CPU than 'pass'
