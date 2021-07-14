@@ -200,13 +200,10 @@ class TempManagement(threading.Thread):
 
         if self.pid.error > 0:
             self.heater_on()
-            logger.debug("Turning heater on")
         elif -0.1 <= self.pid.error <= 0.1:
             self.heater_off()
-            logger.debug("Turning heater off")
         else:
             self.heater_off()
-            logger.debug("Turning heater off")
 
         if feedback > (SetPoint + 2):
             self.em.error(f"Temperature at {feedback}. Please cool down system.", "HIGH_TEMP")
