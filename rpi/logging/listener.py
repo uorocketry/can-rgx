@@ -22,10 +22,9 @@ class LoggingListener(multiprocessing.Process):
     def run(self):
         logging_config()
         while True:
-            while not self.queue.empty():
-                record = self.queue.get()
-                logger = logging.getLogger(record.name)
-                logger.handle(record)
+            record = self.queue.get()
+            logger = logging.getLogger(record.name)
+            logger.handle(record)
 
 
 def logging_config():
