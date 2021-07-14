@@ -191,6 +191,7 @@ class TempManagement(threading.Thread):
         GPIO.output(RELAY_PIN, GPIO.LOW)  # Turn relay off
 
     def pid_loop(self):
+        time.sleep(1)
         logger = logging.getLogger(__name__)
 
         # get feedback aka avg (current) temperature
