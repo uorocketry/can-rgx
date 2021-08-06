@@ -11,14 +11,14 @@ import RPi.GPIO as GPIO
 RELAY_PIN = 21
 
 
-#thermometer_names = {'28-00000bc725ef': '1',
-#                     '28-00000bc743d3': '2',
-#                     '28-00000bc74b3b': '3',
-#                     '28-00000bca5780': '4',
-#                     }
-
-thermometer_names = {'28-00000bc743d3': '2',
-                     '28-00000bc74b3b': '3'
+thermometer_names = {'28-00000bc725ef': '1',
+                     '28-00000bc743d3': '2',
+                     '28-00000bc74b3b': '3',
+                     '28-00000bca5780': '4',
+                     '30-2afaa097a9ae': '5',
+                     '32-6afaa097a9ae': '6',
+                     '32-aafaa097a9ae': '7',
+                     '32-eafaa092a9ae': '8'
                      }
 
 
