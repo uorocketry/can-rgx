@@ -18,8 +18,13 @@ thermometer_names = {'28-00000bc725ef': '1',
                      '30-2afaa097a9ae': '5',
                      '32-6afaa097a9ae': '6',
                      '32-aafaa097a9ae': '7',
-                     '32-eafaa092a9ae': '8'
-                     }
+                     '32-eafaa092a9ae': '8',
+                     '48-02581010d213': '9',
+                     '28-00000bc9bc5c': '10',
+                     '28-00000bc91c30': '11',
+                     '28-3c5301074760': '12',
+                     '28-00000bc74760': '13'
+                    }
 
 
 class InvalidTemperatureDataError(Exception):
