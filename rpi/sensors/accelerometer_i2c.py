@@ -35,7 +35,7 @@ SELF_TEST = 0b10001111  # full resolution (13bits) MSB mode, +/-16g
 
 # register values
 MEASURE_MODE = 0b00001000  # set device to measure mode (D3)
-BW_OUTPUT_RATE = 0b00001101  # normal operation, 800Hz output rate (max)
+BW_OUTPUT_RATE = 0b00001011  # normal operation, 200Hz output rate (max for 100kHz RPi I2C)
 FIFO_MODE = 0b10000001  # stream mode, INT1 triggered, 31bit buffer
 FIFO_BYPASS = 0b00000000
 
@@ -81,7 +81,7 @@ class Accelerometer(SensorLogging):
         em.error("Acceleration sensor is not connected", "ACCEL_CONNECTION")
 
         # Wait until the sensor connects
-        while self.bus.read_byte_data(ACC_ADDRESS, 0x00) == ACC_DEVICE_ID:
+        while self.bus.read_byte_data(ACC_ADDRESS, 0x00) != ACC_DEVICE_ID:
             pass
 
         em.resolve("Acceleration sensor connected", "ACCEL_CONNECTION")
