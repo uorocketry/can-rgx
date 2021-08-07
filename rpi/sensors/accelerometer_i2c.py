@@ -35,7 +35,7 @@ SELF_TEST = 0b10001111  # full resolution (13bits) MSB mode, +/-16g
 
 # register values
 MEASURE_MODE = 0b00001000  # set device to measure mode (D3)
-BW_OUTPUT_RATE = 0b00001011  # normal operation, 200Hz output rate (max for 100kHz RPi I2C)
+BW_OUTPUT_RATE = 0x0A  # normal operation, 50Hz output rate (max for 100kHz RPi I2C)
 FIFO_MODE = 0b10000001  # stream mode, INT1 triggered, 31bit buffer
 FIFO_BYPASS = 0b00000000
 
@@ -57,7 +57,7 @@ ACC_ADDRESS = 0x53  # CORRECT THIS VALUE depending on physical connection (ALT A
 
 
 class Accelerometer(SensorLogging):
-    def setup(self, measure_range=RANGE_16G):
+    def setup(self, measure_range=RANGE_8G):
         self.bus = smbus.SMBus(1)  # correct this too
 
         self.check_sensor_connection()
