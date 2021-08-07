@@ -171,6 +171,7 @@ class Thermometer(SensorLogging):
         # Enable pull up for second thermometer data line
         GPIO.setmode(GPIO.BCM)
         GPIO.setup(19, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+        GPIO.setup(4, GPIO.IN, pull_up_down=GPIO.PUD_UP)
 
         # next lines added for testing only relay and sensors:
         # print("Starting Relays. Temperature should start rising.")
