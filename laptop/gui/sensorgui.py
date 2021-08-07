@@ -1,5 +1,36 @@
 import logging
+import math
 import tkinter as tk
+
+
+class AccelerationFrame(tk.Frame, logging.Handler):
+    def __init__(self, parent):
+        tk.Frame.__init__(self, parent, highlightthickness=1, highlightbackground="black")
+        logging.Handler.__init__(self)
+
+        self.title = tk.Label(self, text="Accelerometer", font=("Arial", 18))
+        self.title.grid(row=0, column=0)
+
+        self.value = tk.Label(self, text="INVALID", font=("Arial", 18))
+        self.value.grid(row=1, column=0)
+
+        self.grid_rowconfigure(0, weight=1)
+        self.grid_rowconfigure(1, weight=1)
+
+        # Register a handler so we can get access to all the thermometer's data
+        logging.getLogger("sensorlog.acceleration").addHandler(self)
+
+    def emit(self, record):
+        try:
+            accel_ms_x = float(record.msg[1])
+            accel_ms_y = float(record.msg[2])
+            accel_ms_z = float(record.msg[3])
+
+            accel_ms = math.sqrt(accel_ms_x**2 + accel_ms_y**2 + accel_ms_z**2)
+
+            self.value.config(text=accel_ms/9.8)
+        except:
+            pass
 
 
 class HeaterFrame(tk.Frame, logging.Handler):
@@ -83,6 +114,9 @@ class SensorGUI:
 
         self.heater = HeaterFrame(master)
         self.heater.grid(row=0, column=1)
+
+        self.accel = AccelerationFrame(master)
+        self.heater.grid(row=1, column=1)
 
         master.grid_columnconfigure(0, weight=1)
         master.grid_columnconfigure(1, weight=1)
