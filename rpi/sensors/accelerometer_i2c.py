@@ -88,7 +88,7 @@ class Accelerometer(SensorLogging):
 
     def set_measure_range(self, measure_range):
         """Method to set range and resolution"""
-        self.bus.write_byte_data(ACC_ADDRESS, DATA_FORMAT, measure_range)
+        self.bus.write_byte_data(ACC_ADDRESS, DATA_FORMAT | 0b1000, measure_range)
 
     def set_fifo(self):
         """Method to set FIFO mode"""
