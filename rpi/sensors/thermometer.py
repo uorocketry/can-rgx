@@ -8,8 +8,8 @@ from rpi.sensors.temp_management import TempManagement
 from shared.customlogging.errormanager import ErrorManager
 
 import RPi.GPIO as GPIO
-RELAY_PIN = 21
 
+RELAY_PIN = 21
 
 thermometer_names = {'28-00000bc725ef': '1',
                      '28-00000bc743d3': '2',
@@ -24,6 +24,11 @@ thermometer_names = {'28-00000bc725ef': '1',
 
 class InvalidTemperatureDataError(Exception):
     pass
+
+
+class InvalidTemperatureRangeError(Exception):
+    def __init__(self, temperature):
+        self.temperature = temperature
 
 
 class ThermometerList(threading.Thread):
@@ -64,7 +69,13 @@ class ThermometerList(threading.Thread):
         # Now, this regex retrieves the actual temperature
         temp = re.match(r'^(?:\w{2} ){9}t=(\d+)$', lines[1]).group(1)
 
-        return float(temp) / 1000.0
+        temp = float(temp) / 1000.0
+
+        # Sanity check for the temperature
+        if temp < 15 or temp > 75:
+            raise InvalidTemperatureDataError(temp)
+
+        return temp
 
     def run(self):
         em = ErrorManager(__name__)
@@ -82,12 +93,17 @@ class ThermometerList(threading.Thread):
                 # If we had a previous error, resolve it
                 em.resolve("Error has been cleared for temperature sensor {}".format(self.name), self.name, False)
             except InvalidTemperatureDataError:
-                em.error(
-                    "Temperature sensor {} is returning invalid data. It may have been disconnected.".format(self.name),
-                    self.name)
+                em.error("Temperature sensor {} is returning invalid data. It may have been disconnected."
+                         .format(self.name), self.name)
+                ThermometerList.__update_temperature_data(self.name, None)
+            except InvalidTemperatureRangeError as e:
+                em.error("Temperature sensor {} is returning a temperature of {}. This is outside the valid range, "
+                         "so discarding it".format(self.name, e.temperature), self.name)
+                ThermometerList.__update_temperature_data(self.name, None)
             except (OSError, IndexError, AttributeError):
                 em.error("Error reading from temperature sensor {}. Check if it is connected.".format(self.name),
                          self.name)
+                ThermometerList.__update_temperature_data(self.name, None)
 
     @staticmethod
     def __update_temperature_data(name, data):
@@ -153,7 +169,7 @@ class Thermometer(SensorLogging):
         # GPIO.setup(RELAY_PIN, GPIO.OUT)
         # GPIO.output(RELAY_PIN, GPIO.HIGH)  # Turn relay on
 
-        #GPIO.output(RELAY_PIN, GPIO.LOW)  # Turn relay off
+        # GPIO.output(RELAY_PIN, GPIO.LOW)  # Turn relay off
 
         # Temperature Management Thread
         time.sleep(10)  # Give some time to the temperature sensors to start returning data
