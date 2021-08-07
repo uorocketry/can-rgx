@@ -79,7 +79,7 @@ class Accelerometer(SensorLogging):
         em.error("Acceleration sensor is not connected", "ACCEL_CONNECTION")
 
         # Wait until the sensor connects
-        while self.bus.read_byte_data(0x00) == ACC_DEVICE_ID:
+        while self.bus.read_byte_data(0x00) != ACC_DEVICE_ID:
             pass
 
         em.resolve("Acceleration sensor connected", "ACCEL_CONNECTION")
