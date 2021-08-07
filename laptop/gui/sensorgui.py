@@ -3,6 +3,32 @@ import math
 import tkinter as tk
 
 
+class PressureFrame(tk.Frame, logging.Handler):
+    def __init__(self, parent):
+        tk.Frame.__init__(self, parent, highlightthickness=1, highlightbackground="black")
+        logging.Handler.__init__(self)
+
+        self.title = tk.Label(self, text="Pressure", font=("Arial", 18))
+        self.title.grid(row=0, column=0)
+
+        self.value = tk.Label(self, text="INVALID", font=("Arial", 18))
+        self.value.grid(row=1, column=0)
+
+        self.grid_rowconfigure(0, weight=1)
+        self.grid_rowconfigure(1, weight=1)
+
+        # Register a handler so we can get access to all the thermometer's data
+        logging.getLogger("sensorlog.pressure").addHandler(self)
+
+    def emit(self, record):
+        try:
+            pressure = float(record.msg[1])
+
+            self.value.config(text=pressure)
+        except:
+            pass
+
+
 class AccelerationFrame(tk.Frame, logging.Handler):
     def __init__(self, parent):
         tk.Frame.__init__(self, parent, highlightthickness=1, highlightbackground="black")
@@ -116,9 +142,13 @@ class SensorGUI:
         self.heater.grid(row=0, column=1)
 
         self.accel = AccelerationFrame(master)
+        self.heater.grid(row=1, column=0)
+
+        self.pressure = PressureFrame(master)
         self.heater.grid(row=1, column=1)
 
         master.grid_columnconfigure(0, weight=1)
         master.grid_columnconfigure(1, weight=1)
 
         master.grid_rowconfigure(0, weight=1)
+        master.grid_rowconfigure(1, weight=1)
