@@ -41,7 +41,7 @@ class LEDs:
                     self.em.error("LED {} did not turn on".format(led_number), led_number)
 
                 # Resolve the error if we threw earlier
-                self.em.resolve("Could not retrieve LED state from the Teensy", f"teensy_{led_number}", False)
+                self.em.resolve("Can now retrieve state from the Teensy", f"teensy_{led_number}", False)
             except Exception as e:
                 self.em.error("Could not check LED State from the Teensy: {}".format(e), f"teensy_{led_number}")
 
