@@ -61,6 +61,9 @@ void setup() {
     pinMode(MOTOR2_TOP_LIMIT, INPUT_PULLUP);
     pinMode(MOTOR2_LOWER_LIMIT, INPUT_PULLUP);
 
+    pinMode(13, OUTPUT);
+    digitalWrite(13, HIGH);
+
 #ifdef DEBUG
     Serial.begin(SERIAL_RATE);
 #endif
