@@ -189,9 +189,10 @@ class ThermometerFrame(tk.Frame, logging.Handler):
         fan = self.temperature_data.get("Fan Intake")
         opposite = self.temperature_data.get("Opposite to Heater")
         electronics = self.temperature_data.get("Electronics")
+        foam = self.temperature_data.get("Foam")
 
         self.value.config(text=f"Average: {average_temp}\nMotors: {motors}\nFan: {fan}\n"
-                               f"Opposite to Heater: {opposite}\nElectronics: {electronics}")
+                               f"Opposite to Heater: {opposite}\nElectronics: {electronics}\nFoam: {foam}")
 
 
 class SensorGUI:

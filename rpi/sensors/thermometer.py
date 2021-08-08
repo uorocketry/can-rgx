@@ -15,7 +15,8 @@ thermometer_names = {
     '28-00000bc746b6': 'Motors',
     '28-00000bc91c30': 'Fan Intake',
     '28-00000bca55a7': 'Opposite to Heater',
-    '28-00000bcada29': 'Electronics'
+    '28-00000bcada29': 'Electronics',
+    '28-00000bc807e7': 'Foam'
     }
 
 
