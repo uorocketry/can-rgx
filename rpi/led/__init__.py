@@ -35,7 +35,7 @@ class LEDs:
             try:
                 led_state = self.teensy.get_led_state()
                 logger.debug("LED State: {}".format(led_state))
-                if (led_state << led_number) & 0b1 == 1:
+                if (led_state >> led_number-1) & 0b1 == 1:
                     self.em.resolve("Successfully verified LED {} turned on".format(led_number), led_number)
                 else:
                     self.em.error("LED {} did not turn on".format(led_number), led_number)
