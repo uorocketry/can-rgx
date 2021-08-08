@@ -30,7 +30,7 @@ const uint8_t PHOTODIODE_PORTS[] = {
 };
 
 // Threshold at which the photodiodes should be recognized as HIGH.
-const int PHOTODIODE_TRESHOLD = 50;
+const int PHOTODIODE_TRESHOLD = 900;
 
 // Communication settings
 const uint8_t I2C_ADDRESS = 0x8;
@@ -53,7 +53,7 @@ void setup() {
 
     // Enable the internal pulldown resistors for the photodiodes
     for (auto i : PHOTODIODE_PORTS) {
-        pinMode(i, INPUT_PULLDOWN);
+        pinMode(i, INPUT_PULLUP);
     }
 
     pinMode(MOTOR1_TOP_LIMIT, INPUT_PULLUP);
@@ -122,7 +122,7 @@ void sendI2CState() {
 
             // Add the value to the state
             state = (state << 1);
-            if (value > PHOTODIODE_TRESHOLD) {
+            if (value < PHOTODIODE_TRESHOLD) {
                 state |= 0x1;
             }
         }
@@ -182,9 +182,10 @@ void printDebugInfo() {
 
         // Add the value to the state
         state = (state << 1);
-        if (value > PHOTODIODE_TRESHOLD) {
+        if (value < PHOTODIODE_TRESHOLD) {
             state |= 0x1;
         }
+        PRINTLN(value);
 	}
 
 	PRINT("LED State: ");
