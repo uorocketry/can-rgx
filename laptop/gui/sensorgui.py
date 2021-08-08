@@ -138,7 +138,7 @@ class ThermometerFrame(tk.Frame, logging.Handler):
         tk.Frame.__init__(self, parent, highlightthickness=1, highlightbackground="black")
         logging.Handler.__init__(self)
 
-        self.title = tk.Label(self, text="Average Temperature", font=("Arial", 18))
+        self.title = tk.Label(self, text="Temperature", font=("Arial", 18))
         self.title.grid(row=0, column=0)
 
         self.value = tk.Label(self, text="INVALID", font=("Arial", 18))
@@ -164,6 +164,7 @@ class ThermometerFrame(tk.Frame, logging.Handler):
     def update_value(self):
         sum = 0.0
         count = 0.0
+        average_temp = None
         for i in self.temperature_data.values():
             try:
                 sum += i
@@ -174,7 +175,13 @@ class ThermometerFrame(tk.Frame, logging.Handler):
         if count > 0:
             average_temp = sum / count
 
-            self.value.config(text=average_temp)
+        motors = self.temperature_data.get("Motors")
+        fan = self.temperature_data.get("Fan Intake")
+        opposite = self.temperature_data.get("Opposite to Heater")
+        electronics = self.temperature_data.get("Electronics")
+
+        self.value.config(text=f"Average: {average_temp}\nMotors: {motors}\nFan: {fan}\n"
+                               f"Opposite to Heater: {opposite}\nElectronics: {electronics}")
 
 
 class SensorGUI:
