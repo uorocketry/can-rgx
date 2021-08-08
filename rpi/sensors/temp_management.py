@@ -16,7 +16,12 @@ SetPoint = 37
 RELAY_PIN = 21
 
 # ID's of sensors to poll - change when lay out finalized.
-sensor_id_list = ['2', '3']
+sensor_id_list = [
+    'Motors',
+    'Fan Intake',
+    'Opposite to Heater',
+    'Electronics'
+]
 
 
 class PID:
