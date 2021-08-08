@@ -140,5 +140,4 @@ class Accelerometer(SensorLogging):
         self.setup()
         while True:
             acceleration = self.get_acceleration_data()
-            print(acceleration)
             self.sensorlogger.info([time.time() * 100, acceleration["x"], acceleration["y"], acceleration["z"]])
