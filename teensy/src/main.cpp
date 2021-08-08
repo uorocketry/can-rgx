@@ -30,7 +30,7 @@ const uint8_t PHOTODIODE_PORTS[] = {
 };
 
 // Threshold at which the photodiodes should be recognized as HIGH.
-const int PHOTODIODE_TRESHOLD = 900;
+const int PHOTODIODE_TRESHOLD = 990;
 
 // Communication settings
 const uint8_t I2C_ADDRESS = 0x8;
