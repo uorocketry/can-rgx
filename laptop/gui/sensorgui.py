@@ -2,6 +2,7 @@ import logging
 import math
 import operator
 import tkinter as tk
+import time
 
 
 class VibrationFrame(tk.Frame, logging.Handler):
@@ -95,7 +96,12 @@ class AccelerationFrame(tk.Frame, logging.Handler):
         # Register a handler so we can get access to all the thermometer's data
         logging.getLogger("sensorlog.acceleration").addHandler(self)
 
+        self.last_update = 0
+
     def emit(self, record):
+        if time.time() - self.last_update < 0.5:
+            return
+
         try:
             accel_ms_x = float(record.msg[1])
             accel_ms_y = float(record.msg[2])
@@ -103,7 +109,10 @@ class AccelerationFrame(tk.Frame, logging.Handler):
 
             accel_ms = math.sqrt(accel_ms_x ** 2 + accel_ms_y ** 2 + accel_ms_z ** 2)
 
-            self.value.config(text=accel_ms / 9.8)
+            accel_g = round(accel_ms / 9.8, 2)
+
+            self.value.config(text=accel_g)
+            self.last_update = time.time()
         except:
             pass
 
