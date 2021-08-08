@@ -174,6 +174,7 @@ class ThermometerFrame(tk.Frame, logging.Handler):
 
         if count > 0:
             average_temp = sum / count
+            average_temp = round(average_temp, 2)
 
         motors = self.temperature_data.get("Motors")
         fan = self.temperature_data.get("Fan Intake")
