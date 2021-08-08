@@ -58,9 +58,9 @@ class ErrorManager:
             self.errors[error_id].last_raised = time.time()
 
         if error_level == logging.WARNING:
-            self.logger.warning(message, extra={'errorID': error_id + self.id_append})
+            self.logger.warning(message, extra={'errorID': str(error_id) + self.id_append})
         else:
-            self.logger.error(message, extra={'errorID': error_id + self.id_append})
+            self.logger.error(message, extra={'errorID': str(error_id) + self.id_append})
 
     def escalate(self, message, error_id, seconds_between_escalation=10):
         """
@@ -117,6 +117,6 @@ class ErrorManager:
         """
         if error_id in self.errors:
             self.errors.pop(error_id)
-            self.logger.info(message, extra={'errorID': error_id + self.id_append})
+            self.logger.info(message, extra={'errorID': str(error_id) + self.id_append})
         elif always_send:
-            self.logger.info(message, extra={'errorID': error_id + self.id_append})
+            self.logger.info(message, extra={'errorID': str(error_id) + self.id_append})
