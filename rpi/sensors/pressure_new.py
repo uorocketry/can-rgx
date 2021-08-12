@@ -1,45 +1,78 @@
 import struct
 import time
-import spidev
+import smbus
 from rpi.sensors.sensorlogging import SensorLogging
 from shared.customlogging.errormanager import ErrorManager
 
+PRES_SENS_ADDRESS = 0x76 #SDO to GND
+
 #Registers Index
-PADC_MSB = 0X00    #10-bit pressure ADC output value MSB
-PADC_LSB = 0X01    # " LSB
-TADC_MSB = 0X02    #10-bit temperature ADC output value MSB
-TADC_LSB = 0X03    # " LSB
+CMD = 0x7E
+CONFIG = 0x1F
+PWR_CTRL = 0x1B
+IF_CONF = 0x1A
+FIFO_CONFIG1 = 0x17
+FIFO_CONFIG2 = 0x18
+ODR = 0x1D
+OSR = 0x1C
 
-A0MSB = 0x04    #A0 coefficient MSB
-AOLSB = 0x05    #A0 coefficient LSB
-B1MSB = 0x06
-B1LSB = 0x07
-B2MSB = 0x08
-B2LSB = 0x09
-C12MSB = 0x0A
-C12LSB = 0x0B
-CONVERT_REG = 0x12  #Start pressure and temp. conversion
+DATA0 = 0x04    #Pressure bits 7-0
+DATA1 = 0x05    #Pressure 15-8
+DATA2 = 0x06    #Pressure 23-16
 
-#SPI Config
-SPI_MAX_CLOCK_HZ = 300000   #300kHz
-SPI_MODE = 0b11
-SPIBus = 0
-SPIDevice = 0
-CSHIGH = False  #CS Low on start of transmission
+DATA3_T = 0x07  #Temp bits 7-0
+DATA4_T = 0x08  #Temp 15-8
+DATA5_T = 0x09  #Temp 23-16
+
+
+READ_BIT = 0x01
+WRITE_BIT = 0X00
+DUMMY_BYTE = 0X00
 
 #Register Values
+POWER_MODE = 0b00001111     #Enable pressure and temp. measurement, normal mode
+ODR_MODE = 0x00             #Output data rate 200Hz (lowest) - Change as required
+
 
 class Pressure(SensorLogging):
     def setup(self):
-        self.spi = spidev.SpiDev()
-        self.spi.open(SPIBus, SPIDevice)
-        self.spi.max_speed_hz = SPI_MAX_CLOCK_HZ
-        self.spi.mode = SPI_MODE
+        self.bus = smbus.SMBus(1)
 
         self.check_sensor_connection()
+        self.set_power_mode()
+        self.set_output_data_rate()
 
     def check_sensor_connection(self):
+        em = ErrorManager(__name__)
+
+        DEVICE_ID = 0x50
+
+        if self.bus.read_byte_data(PRES_SENS_ADDRESS, 0x00) == DEVICE_ID:
+            return
+
+        em.error("Acceleration sensor is not connected", "ACCEL_CONNECTION")
+
+        # Wait until the sensor connects
+        while self.bus.read_byte_data(PRES_SENS_ADDRESS, 0x00) != DEVICE_ID:
+            pass
+
+    def set_power_mode(self):
+        """Method to enable sensor and set Power mode"""
+        self.bus.write_byte_data(PRES_SENS_ADDRESS, PWR_CTRL, POWER_MODE)
+
+    def set_output_data_rate(self):
+        """Method to set output data rate"""
+        self.bus.write_byte_data(PRES_SENS_ADDRESS, ODR, ODR_MODE)
+
+
+
+
+
+    def read_pressure(self):
         pass
+
+
+
 
 
 
