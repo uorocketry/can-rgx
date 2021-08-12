@@ -173,9 +173,6 @@ class SensorGUI:
         self.pressure = PressureFrame(master)
         self.pressure.grid(row=1, column=1)
 
-        self.vibration = VibrationFrame(master)
-        self.vibration.grid(row=2, column=0)
-
         master.grid_columnconfigure(0, weight=1)
         master.grid_columnconfigure(1, weight=1)
 
