@@ -3,6 +3,8 @@ import math
 import time
 import tkinter as tk
 
+SENSOR_REFRESH = 0.5
+
 
 class PressureFrame(tk.Frame, logging.Handler):
     def __init__(self, parent):
@@ -21,11 +23,17 @@ class PressureFrame(tk.Frame, logging.Handler):
         # Register a handler so we can get access to all the thermometer's data
         logging.getLogger("sensorlog.pressure").addHandler(self)
 
+        self.last_update = 0
+
     def emit(self, record):
+        if time.time() - self.last_update < SENSOR_REFRESH:
+            return
+
         try:
             pressure = float(record.msg[1])
 
             self.value.config(text=round(pressure / 1000.0, 1))
+            self.last_update = time.time()
         except:
             pass
 
@@ -50,7 +58,7 @@ class AccelerationFrame(tk.Frame, logging.Handler):
         self.last_update = 0
 
     def emit(self, record):
-        if time.time() - self.last_update < 0.5:
+        if time.time() - self.last_update < SENSOR_REFRESH:
             return
 
         try:
