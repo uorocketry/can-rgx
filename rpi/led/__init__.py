@@ -14,10 +14,10 @@ class LEDs:
         try:
             port = get_port_by_serial_number('6A011004')
             self.dmx = Controller(port, auto_submit=True)
-        except IOError:
+        except (IOError, ValueError) as e:
             em = ErrorManager(__name__)
-            # TODO: Maybe retry to connect after a timeout? Would need to use a separate thread.
-            em.error("Could connect to the DMX controller! Please restart the RPi server.", "DMX_CONNECTION")
+            em.error("Could connect to the DMX controller!", "DMX_CONNECTION")
+            raise e
 
         # Use a lock to access the DMX Controller. Not clear if this is needed, but better be safe than worry.
         self.lock = threading.Lock()
