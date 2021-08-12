@@ -32,7 +32,7 @@ class PressureFrame(tk.Frame, logging.Handler):
         try:
             pressure = float(record.msg[1])
 
-            self.value.config(text=round(pressure / 1000.0, 1))
+            self.value.config(text=round(pressure / 1000.0, 3))
             self.last_update = time.time()
         except:
             pass
