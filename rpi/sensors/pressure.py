@@ -1,10 +1,10 @@
-import logging
 import struct
 import time
 
 import smbus
 
 from rpi.sensors.sensorlogging import SensorLogging
+from shared.customlogging.errormanager import ErrorManager
 
 
 class Pressure(SensorLogging):
@@ -51,17 +51,11 @@ class Pressure(SensorLogging):
         super().setup_logging("pressure", ["value"])
         self.setup()
 
-        logger = logging.getLogger(__name__)
-
-        inErrorState = False
+        em = ErrorManager(__name__)
         while True:
             try:
                 self.sensorlogger.info([time.time() * 1000, self.read_pressure()])
 
-                if inErrorState:
-                    inErrorState = False
-                    logger.warning("Error has been cleared for pressure sensor.")
-            except OSError:
-                if not inErrorState:
-                    logger.exception("Error while reading from pressure sensor.")
-                    inErrorState = True
+                em.resolve("Error has been cleared for pressure sensor", "pressure")
+            except OSError as e:
+                em.error("Error while reading from pressure sensor", "pressure")
