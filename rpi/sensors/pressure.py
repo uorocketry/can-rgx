@@ -56,6 +56,6 @@ class Pressure(SensorLogging):
             try:
                 self.sensorlogger.info([time.time() * 1000, self.read_pressure()])
 
-                em.resolve("Error has been cleared for pressure sensor", "pressure")
+                em.resolve("Error has been cleared for pressure sensor", "pressure", False)
             except OSError as e:
                 em.error("Error while reading from pressure sensor", "pressure")
