@@ -1,3 +1,6 @@
+import logging
+import threading
+import time
 import tkinter as tk
 import tkinter.messagebox
 
@@ -63,8 +66,16 @@ class LEDFrame(tk.Frame):
                                                                                                    i + 1))
 
         if confirm:
-            self.activate_element(i)
+            threading.Thread(target=self.activate_element, args=(i,)).start()
 
     def activate_element(self, index):
+        logger = logging.getLogger(__name__)
+
+        countdown = 5
+        while countdown > 0:
+            logger.info(f"LED {index + 1}: {countdown}")
+            time.sleep(1)
+            countdown -= 1
+
         message = {'type': RequestTypes.CONTROLLED, 'ledNumber': index + 1}
         send_message(message)
