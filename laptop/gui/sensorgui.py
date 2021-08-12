@@ -92,13 +92,22 @@ class HeaterFrame(tk.Frame, logging.Handler):
 
         logging.getLogger("sensorlog.temp_management").addHandler(self)
 
+        self.current_colour = self.cget("background")
+
     def emit(self, record):
         heaterOn = record.heaterOn
 
         if heaterOn:
             self.value.config(text="Heating")
+            self.set_bg_colour("green")
         else:
             self.value.config(text="Off")
+            self.set_bg_colour(self.current_colour)
+
+    def set_bg_colour(self, colour):
+        self.config(bg=colour)
+        self.title.config(bg=colour)
+        self.value.config(bg=colour)
 
 
 class ThermometerFrame(tk.Frame, logging.Handler):
@@ -119,6 +128,8 @@ class ThermometerFrame(tk.Frame, logging.Handler):
         logging.getLogger("sensorlog.thermometer").addHandler(self)
 
         self.temperature_data = dict()
+
+        self.set_bg_colour("red")
 
     def emit(self, record):
         device_id = record.msg[1]
@@ -152,6 +163,16 @@ class ThermometerFrame(tk.Frame, logging.Handler):
 
         self.value.config(text=f"Average: {average_temp}\nMotors: {motors}\nFan: {fan}\n"
                                f"Opposite to Heater: {opposite}\nElectronics: {electronics}\nFoam: {foam}")
+
+        if 35 <= average_temp <= 39:
+            self.set_bg_colour("green")
+        else:
+            self.set_bg_colour("red")
+
+    def set_bg_colour(self, colour):
+        self.config(bg=colour)
+        self.title.config(bg=colour)
+        self.value.config(bg=colour)
 
 
 class SensorGUI:
