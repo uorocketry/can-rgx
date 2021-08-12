@@ -1,56 +1,7 @@
 import logging
 import math
-import operator
-import tkinter as tk
 import time
-
-
-class VibrationFrame(tk.Frame, logging.Handler):
-    def __init__(self, parent):
-        tk.Frame.__init__(self, parent, highlightthickness=1, highlightbackground="black")
-        logging.Handler.__init__(self)
-
-        self.title = tk.Label(self, text="Max Vibration", font=("Arial", 18))
-        self.title.grid(row=0, column=0)
-
-        self.value = tk.Label(self, text="INVALID", font=("Arial", 18))
-        self.value.grid(row=1, column=0)
-
-        self.grid_rowconfigure(0, weight=1)
-        self.grid_rowconfigure(1, weight=1)
-
-        # Register a handler so we can get access to all the thermometer's data
-        logging.getLogger("sensorlog.vibration").addHandler(self)
-
-        self.current_time = 0
-        self.vibration_data = dict()
-
-    def emit(self, record):
-        try:
-            time = record.msg[0]
-            frequency = float(record.msg[2])
-            x_data = float(record.msg[3])
-            y_data = float(record.msg[4])
-            z_data = float(record.msg[5])
-
-            # We are doing a new batch of vibration data, so update value than clear the data
-            if time != self.current_time:
-                self.update_value()
-
-                self.vibration_data = dict()
-                self.current_time = time
-
-            # Add the current value to the dict
-            amplitude = math.sqrt(x_data**2 + y_data**2 + z_data**2)
-
-            self.vibration_data[frequency] = amplitude
-        except:
-            pass
-
-    def update_value(self):
-        max_value = max(self.vibration_data.items(), key=operator.itemgetter(1))
-
-        self.value.config(text=f"Frequency: {max_value[0]}\nAmplitude: {max_value[1]}")
+import tkinter as tk
 
 
 class PressureFrame(tk.Frame, logging.Handler):

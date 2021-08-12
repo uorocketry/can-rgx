@@ -47,7 +47,6 @@ fileHandler.addFilter(loggingFilter)
 logger.addHandler(fileHandler)
 
 # Setup sensor logging. Each new sensor need to be added here
-create_sensorlog_handler("sensorlog.vibration")
 create_sensorlog_handler("sensorlog.thermometer")
 create_sensorlog_handler("sensorlog.pressure")
 
