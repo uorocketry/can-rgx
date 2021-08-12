@@ -49,6 +49,7 @@ logger.addHandler(fileHandler)
 # Setup sensor logging. Each new sensor need to be added here
 create_sensorlog_handler("sensorlog.thermometer")
 create_sensorlog_handler("sensorlog.pressure")
+create_sensorlog_handler("sensorlog.acceleration")
 
 # Setting up of the GUI
 root = tk.Tk()
