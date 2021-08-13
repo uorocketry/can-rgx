@@ -12,13 +12,26 @@ from shared.network.requesttypes import RequestTypes
 class MotorFrame(tk.Frame):
     def __init__(self, parent):
         super().__init__(parent)
+        self.parent = parent
 
         self.label = tk.Label(self, text="Motor Control")
         self.label.grid(row=0, column=0, rowspan=2)
 
+        self.keys = ['q', 'w', 'e', 'r']
+
+        self.key_map = dict()
+
         for i in range(2):
-            elem_up = tk.Button(self, text=f"Motor {i + 1} Up", command=lambda i=i: self.confirmation(i, MotorDirection.UP))
-            elem_down = tk.Button(self, text=f"Motor {i + 1} Down", command=lambda i=i: self.confirmation(i, MotorDirection.DOWN))
+            top_key = self.keys[2 * i]
+            bottom_key = self.keys[2 * i + 1]
+
+            elem_up = tk.Button(self, text=f"Motor {i + 1} Up ({top_key})",
+                                command=lambda i=i: self.confirmation(i, MotorDirection.UP))
+            elem_down = tk.Button(self, text=f"Motor {i + 1} Down ({bottom_key})",
+                                  command=lambda i=i: self.confirmation(i, MotorDirection.DOWN))
+
+            self.key_map[top_key] = elem_up
+            self.key_map[bottom_key] = elem_down
 
             elem_up.grid(row=0, column=i + 1, sticky="nsew")
             elem_down.grid(row=1, column=i + 1, sticky="nsew")
@@ -28,13 +41,21 @@ class MotorFrame(tk.Frame):
         self.grid_rowconfigure(0, weight=1)
         self.grid_rowconfigure(1, weight=1)
 
+    def key_press(self, key):
+        try:
+            elem = self.key_map[key.char]
+            elem.invoke()
+        except KeyError:
+            pass
+
     def confirmation(self, i, motor_direction):
         direction_string = "up" if motor_direction == MotorDirection.UP else "down"
 
         confirm = tkinter.messagebox.askokcancel("Confirmation",
                                                  "Are you sure you want to activate {} {} {}?".format("Motor",
                                                                                                       i + 1,
-                                                                                                      direction_string))
+                                                                                                      direction_string),
+                                                 parent=self.parent)
 
         if confirm:
             self.activate_element(i, motor_direction)
@@ -63,8 +84,6 @@ class LEDFrame(tk.Frame):
             self.grid_columnconfigure(i + 1, weight=1)
 
         self.grid_rowconfigure(0, weight=1)
-
-        parent.bind("<Key>", func=self.key_press)
 
     def key_press(self, keypress):
         try:

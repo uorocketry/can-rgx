@@ -13,11 +13,17 @@ class ControlGUI:
         self.motor = MotorFrame(master)
         self.motor.grid(row=1, sticky="nsew", pady=20)
 
-        self.motor = LEDFrame(master)
-        self.motor.grid(row=2, sticky="nsew")
+        self.led = LEDFrame(master)
+        self.led.grid(row=2, sticky="nsew")
 
         master.grid_columnconfigure(0, weight=1)
 
         master.grid_rowconfigure(0, weight=1)
         master.grid_rowconfigure(1, weight=1)
         master.grid_rowconfigure(2, weight=1)
+
+        master.bind("<Key>", func=self.key_press)
+
+    def key_press(self, char):
+        self.motor.key_press(char)
+        self.led.key_press(char)
