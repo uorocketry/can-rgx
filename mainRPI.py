@@ -7,6 +7,8 @@ from rpi.network.server import Server
 # from rpi.sensors.accelerometer import Accelerometer
 from rpi.sensors.accelerometer_i2c import Accelerometer
 from rpi.sensors.pressure import Pressure
+#Comment out previous line and uncomment next one for backup pressure sensor
+#from rpi.sensors.pressure_new import Pressure
 from rpi.sensors.thermometer import Thermometer
 from shared.customlogging.errormanager import ErrorManager
 from shared.customlogging.handler import CustomQueueHandler
