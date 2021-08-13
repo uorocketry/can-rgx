@@ -86,7 +86,7 @@ class Pressure(SensorLogging):
         if self.bus.read_byte_data(PRES_SENS_ADDRESS, 0x00) == DEVICE_ID:
             return
 
-        em.error("Acceleration sensor is not connected", "ACCEL_CONNECTION")
+        em.error("Backup Pressure sensor (BMP388) is not connected", "pressure")
 
         # Wait until the sensor connects
         while self.bus.read_byte_data(PRES_SENS_ADDRESS, 0x00) != DEVICE_ID:
