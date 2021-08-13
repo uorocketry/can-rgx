@@ -47,23 +47,39 @@ class MotorFrame(tk.Frame):
 class LEDFrame(tk.Frame):
     def __init__(self, parent):
         super().__init__(parent)
+        self.parent = parent
 
         self.elementName = "LED"
 
         self.label = tk.Label(self, text="{} Control".format(self.elementName))
         self.label.grid(row=0, column=0)
 
+        self.keys = ['a', 's', 'd', 'f', 'g', 'h', 'j']
+
         for i in range(7):
-            elem = tk.Button(self, text="{} {}".format(self.elementName, i + 1), command=lambda i=i: self.confirmation(i))
+            elem = tk.Button(self, text="{} {} ({})".format(self.elementName, i + 1, self.keys[i]),
+                             command=lambda i=i: self.confirmation(i))
             elem.grid(row=0, column=i + 1, sticky="nsew")
             self.grid_columnconfigure(i + 1, weight=1)
 
         self.grid_rowconfigure(0, weight=1)
 
+        parent.bind("<Key>", func=self.key_press)
+
+    def key_press(self, keypress):
+        try:
+            char = keypress.char
+
+            i = self.keys.index(char)
+
+            self.confirmation(i)
+        except ValueError:
+            pass
+
     def confirmation(self, i):
         confirm = tkinter.messagebox.askokcancel("Confirmation",
-                                                 "Are you sure you want to activate {} {}?".format(self.elementName,
-                                                                                                   i + 1))
+                                                 f"Are you sure you want to activate {self.elementName} {i + 1}?",
+                                                 parent=self.parent)
 
         if confirm:
             threading.Thread(target=self.activate_element, args=(i,)).start()
