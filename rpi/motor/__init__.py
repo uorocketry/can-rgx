@@ -34,7 +34,7 @@ class MotorControl:
             logger.info("Motor {} stopped".format(motor_number + 1))
 
             if status & 1 == 1:
-                self.em.error("Motor {} is in an error state! Did the limit switch break?".format(motor_number + 1),
+                self.em.error("Motor {} has timed out.".format(motor_number + 1),
                               motor_number)
             else:
                 self.em.resolve(
