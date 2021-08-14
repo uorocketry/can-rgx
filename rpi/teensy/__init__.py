@@ -2,41 +2,23 @@
 Code for interacting with the Teensy. The main use of this file is to provide a central way to access the Teensy and
 avoid possible race conditions.
 """
-import threading
-
-from smbus import SMBus
-from tenacity import retry, stop_after_attempt
-
-TEENSY_ADDRESS = 0x8
-
-RETRY_TIMES = 3
-
-
-# These value are sent to the Teensy to select what it will return on a read operation
-class I2CReadState:
-    MOTOR = 0b00
-    LED = 0b01
+import serial
 
 
 class Teensy:
-    # The reading operations are not atomic, i.e. it takes two i2c commands to read from the Teensy. Therefore, we
-    # have this lock to prevent race conditions
-    lock = threading.Lock()
-
     def __init__(self):
-        self.bus = SMBus(1)
+        self.ser = serial.Serial('/dev/ttyACM1', 115200, timeout=1)
 
     def activate_motor(self, motor_number, motor_direction):
-        self.bus.write_byte(TEENSY_ADDRESS, 0b100 | ((motor_number & 1) << 1) | motor_direction & 1)
+        data = ((motor_number & 1) << 1) | (motor_direction & 1)
+        self.ser.write(str.encode(f"{data}\n"))
 
-    @retry(stop=stop_after_attempt(3))
     def get_motor_state(self):
-        with Teensy.lock:
-            self.bus.write_byte(TEENSY_ADDRESS, I2CReadState.MOTOR & 0b11)  # Tell the Teensy to return motor info
-            return self.bus.read_byte(TEENSY_ADDRESS)
+        self.ser.flushInput()
+        state = int(self.ser.readline().decode('utf-8').rstrip())
+        return (state >> 7) & 0b1111
 
-    @retry(stop=stop_after_attempt(3))
     def get_led_state(self):
-        with Teensy.lock:
-            self.bus.write_byte(TEENSY_ADDRESS, I2CReadState.LED & 0b11)  # Tell the Teensy to return led info
-            return self.bus.read_byte(TEENSY_ADDRESS)
+        self.ser.flushInput()
+        state = int(self.ser.readline().decode('utf-8').rstrip())
+        return state & 0b1111111
