@@ -58,7 +58,7 @@ void setup() {
     pinMode(13, OUTPUT);
     digitalWrite(13, HIGH);
 
-    Serial.begin(9600);
+    Serial.begin(115200);
 }
 
 uint8_t lastRead = 0;
@@ -89,7 +89,7 @@ void checkForMessage() {
 //      The state of each LED is represented by a 0 (OFF) or 1 (ON).
 //      See the PHOTODIODE_PORTS variable for the order of the LEDs.
 void sendState() {
-    uint8_t state = (isLimitPressed(MOTOR1_TOP_LIMIT) << 3) | (isLimitPressed(MOTOR1_LOWER_LIMIT) << 2) |
+    uint16_t state = (isLimitPressed(MOTOR1_TOP_LIMIT) << 3) | (isLimitPressed(MOTOR1_LOWER_LIMIT) << 2) |
             (isLimitPressed(MOTOR2_TOP_LIMIT) << 1) | (isLimitPressed(MOTOR2_LOWER_LIMIT));
 
     state = state << 4;
@@ -116,4 +116,5 @@ void loop() {
     checkForMessage();
 	motor1.checkState();
 	motor2.checkState();
+	delay(50);
 }
