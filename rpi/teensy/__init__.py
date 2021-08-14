@@ -7,7 +7,7 @@ import serial
 
 class Teensy:
     def __init__(self):
-        self.ser = serial.Serial('/dev/ttyACM1', 115200, timeout=1)
+        self.ser = serial.Serial('/dev/ttyACM0', 115200, timeout=1)
 
     def activate_motor(self, motor_number, motor_direction):
         data = ((motor_number & 1) << 1) | (motor_direction & 1)
