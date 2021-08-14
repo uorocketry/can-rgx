@@ -138,6 +138,13 @@ class Accelerometer(SensorLogging):
     def run(self):
         super().setup_logging("acceleration", ["x", "y", "z"])
         self.setup()
+        em = ErrorManager(__name__)
         while True:
-            acceleration = self.get_acceleration_data()
-            self.sensorlogger.info([time.time() * 100, acceleration["x"], acceleration["y"], acceleration["z"]])
+            try:
+                acceleration = self.get_acceleration_data()
+                self.sensorlogger.info([time.time() * 100, acceleration["x"], acceleration["y"], acceleration["z"]])
+
+                em.resolve("Acceleration sensor is now working correctly", "accel", False)
+            except OSError:
+                em.error("Error reading from acceleration sensor", "accel")
+
