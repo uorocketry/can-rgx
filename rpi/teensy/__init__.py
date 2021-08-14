@@ -11,6 +11,7 @@ class Teensy:
 
     def activate_motor(self, motor_number, motor_direction):
         data = ((motor_number & 1) << 1) | (motor_direction & 1)
+        data |= 0b1001 << 2
         self.ser.write(str.encode(f"{data}\n"))
 
     def get_motor_state(self):

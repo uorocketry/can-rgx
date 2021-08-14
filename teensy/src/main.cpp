@@ -68,6 +68,14 @@ void checkForMessage() {
         String data_str = Serial.readStringUntil('\n');
         int data = data_str.toInt();
 
+        int check = (data >> 2) & 0b1111;
+        if (check != 0b1001) {
+            // Ignore if we don't start with this sequence of bits
+            // This is to prevent occasional times where the Teensy reads a command
+            // when there is none
+            return;
+        }
+
         uint8_t motorNumber = (data >> 1) & 1;
         auto motorDirection = static_cast<MotorDirection>(data & 1);
 
