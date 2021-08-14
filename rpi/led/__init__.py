@@ -28,8 +28,8 @@ class LEDs:
         with self.lock:
             logger = logging.getLogger(__name__)
             logger.info("Activating LED {}".format(led_number))
-            self.dmx.set_channel(led_number, 50)  # TODO: Set the appropriate intensity value
-            time.sleep(5)
+            self.dmx.set_channel(led_number, 191)
+            time.sleep(30)
 
             # Use the photodiode to verify if the LED turned on
             try:
