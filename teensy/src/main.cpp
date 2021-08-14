@@ -1,7 +1,6 @@
 #include <Arduino.h>
 #include <i2c_driver_wire.h>
 #include "main.h"
-#include "debug.h"
 #include "motor.h"
 
 // Ports for the motors.
@@ -46,11 +45,6 @@ Motor motor1(MOTOR1_EN, MOTOR1_IN1, MOTOR1_IN2, MOTOR1_TOP_LIMIT, MOTOR1_LOWER_L
 Motor motor2(MOTOR2_EN, MOTOR2_IN1, MOTOR2_IN2, MOTOR2_TOP_LIMIT, MOTOR2_LOWER_LIMIT, MOTOR_TIMEOUT_MILLI);
 
 void setup() {
-    // Setup the Teensy as an i2c slave
-    Wire.begin(I2C_ADDRESS);
-    Wire.onReceive(receiveI2CEvent);
-    Wire.onRequest(sendI2CState);
-
     // Enable the internal pulldown resistors for the photodiodes
     for (auto i : PHOTODIODE_PORTS) {
         pinMode(i, INPUT_PULLUP);
@@ -64,39 +58,23 @@ void setup() {
     pinMode(13, OUTPUT);
     digitalWrite(13, HIGH);
 
-#ifdef DEBUG
-    Serial.begin(SERIAL_RATE);
-#endif
+    Serial.begin(9600);
 }
 
 uint8_t lastRead = 0;
 
-/**
- * This function expects to receive three bits from I2C.
- * If the 1st bit (MSB) is 1, the action will be a motor control.
- *  2nd bit: Represents the motorNumber (0 for motor 1 and 1 for motor 2)
- *  3rd bit: Represents the motor direction. 0 is UP, 1 is DOWN.
- * If the 1st bit is 0, it will simply change the sent output during a I2C read.
- *  2nd bit: Ignored.
- *  3rd bit: 0 will send motor state. 1 will send LED state
- */
-void receiveI2CEvent(int) {
-    while (Wire.available()) {
-        uint8_t data = Wire.read();
+void checkForMessage() {
+    if (Serial.available() > 0) {
+        String data_str = Serial.readStringUntil('\n');
+        int data = data_str.toInt();
 
-        lastRead = data;
+        uint8_t motorNumber = (data >> 1) & 1;
+        auto motorDirection = static_cast<MotorDirection>(data & 1);
 
-        if ((data >> 2) & 1) { // This is a motor control event
-            uint8_t motorNumber = (data >> 1) & 1;
-            auto motorDirection = static_cast<MotorDirection>(data & 1);
-
-            if (motorNumber == 0) {
-                motor1.startMotor(motorDirection);
-            } else {
-                motor2.startMotor(motorDirection);
-            }
-        } else { // Change what a i2c read will send
-            i2cSendingValue = static_cast<I2CSendingValue>(data & 1);
+        if (motorNumber == 0) {
+            motor1.startMotor(motorDirection);
+        } else {
+            motor2.startMotor(motorDirection);
         }
     }
 }
@@ -110,85 +88,32 @@ void receiveI2CEvent(int) {
 // If sending the LED state:
 //      The state of each LED is represented by a 0 (OFF) or 1 (ON).
 //      See the PHOTODIODE_PORTS variable for the order of the LEDs.
-void sendI2CState() {
-    uint8_t state = 0;
-    if (i2cSendingValue == I2CSendingValue::MOTOR) {
-        state = (motor1.isMoving() << 3) | (motor1.isInErrorState() << 2) | (motor2.isMoving() << 1) |
-                motor2.isInErrorState();
-    } else if (i2cSendingValue == I2CSendingValue::LED) {
-        for (auto i : PHOTODIODE_PORTS) {
-            // Read the photodiode value
-            int value = analogRead(i);
+void sendState() {
+    uint8_t state = (isLimitPressed(MOTOR1_TOP_LIMIT) << 3) | (isLimitPressed(MOTOR1_LOWER_LIMIT) << 2) |
+            (isLimitPressed(MOTOR2_TOP_LIMIT) << 1) | (isLimitPressed(MOTOR2_LOWER_LIMIT));
 
-            // Add the value to the state
-            state = (state << 1);
-            if (value < PHOTODIODE_TRESHOLD) {
-                state |= 0x1;
-            }
-        }
-    }
-    Wire.write(state);
-}
+    state = state << 4;
 
-void loop() {
-#ifdef DEBUG
-    printDebugInfo();
-#endif
-	motor1.checkState();
-	motor2.checkState();
-}
+    state |= (motor1.isMoving() << 3) | (motor1.isInErrorState() << 2) | (motor2.isMoving() << 1) |
+            motor2.isInErrorState();
 
-void printDebugInfo() {
-    static uint32_t lastPrintout;
-    if (millis() - lastPrintout <
-        500) { // Do not print if it has not been more than 0.5 seconds since the last time we did it
-        return;
-    }
-
-    PRINT("Last Read: ");
-    PRINT(lastRead);
-    PRINTLN("");
-
-    PRINTLN("Limit status:");
-    PRINT(isLimitPressed(MOTOR1_TOP_LIMIT));
-    PRINT(isLimitPressed(MOTOR1_LOWER_LIMIT));
-    PRINT(isLimitPressed(MOTOR2_TOP_LIMIT));
-    PRINT(isLimitPressed(MOTOR2_LOWER_LIMIT));
-    PRINTLN("");
-
-    PRINTLN("Motor 1 status");
-    PRINT("Moving: ");
-    PRINTLN(motor1.isMoving());
-    PRINT("Direction: ");
-    PRINTLN(motor1.getDirection());
-
-
-    PRINTLN("Motor 2 status");
-    PRINT("Moving: ");
-    PRINTLN(motor2.isMoving());
-    PRINT("Direction: ");
-    PRINTLN(motor2.getDirection());
-
-    PRINT("State that would be sent to RPi: ");
-    PRINTLN((motor1.isMoving() << 3) | (motor1.isInErrorState() << 2) | (motor2.isMoving() << 1) |
-            motor2.isInErrorState(), BIN);
-    PRINTLN("\n");
-    lastPrintout = millis(); // Update the last time we printed the debug info
-
-	uint8_t state = 0;
-	for (auto i : PHOTODIODE_PORTS) {
-		// Read the photodiode value
-		auto value = analogRead(i);
+    for (auto i : PHOTODIODE_PORTS) {
+        // Read the photodiode value
+        int value = analogRead(i);
 
         // Add the value to the state
         state = (state << 1);
         if (value < PHOTODIODE_TRESHOLD) {
             state |= 0x1;
         }
-        PRINTLN(value);
-	}
+    }
 
-	PRINT("LED State: ");
-	PRINT(state);
-	PRINTLN("\n");
+    Serial.println(state);
+}
+
+void loop() {
+    sendState();
+    checkForMessage();
+	motor1.checkState();
+	motor2.checkState();
 }
