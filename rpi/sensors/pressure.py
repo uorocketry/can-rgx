@@ -51,10 +51,21 @@ class Pressure(SensorLogging):
         super().setup_logging("pressure", ["value"])
         self.setup()
 
+        invalid_data_times = 0
         em = ErrorManager(__name__)
         while True:
             try:
-                self.sensorlogger.info([time.time() * 1000, self.read_pressure()])
+                pressure = self.read_pressure()
+                self.sensorlogger.info([time.time() * 1000, pressure])
+
+                if pressure < 65000: # Fail if we are constantly at a unreasonable value
+                    invalid_data_times += 1
+                else:
+                    invalid_data_times = 0
+
+                if invalid_data_times > 10:
+                    em.error("Pressure sensor is returning unusual values. Resetting the sensor", "unusual")
+                    self.setup()
 
                 em.resolve("Error has been cleared for pressure sensor", "pressure", False)
             except OSError as e:
