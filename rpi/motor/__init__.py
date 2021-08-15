@@ -20,6 +20,7 @@ class MotorControl:
         except:
             self.em.error("Could not send start motor {} command to Teensy".format(motor_number + 1),
                           f"motor_{motor_number}_start")
+            return
 
         try:
             status = 0b11
