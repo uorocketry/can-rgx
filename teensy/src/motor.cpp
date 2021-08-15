@@ -14,7 +14,7 @@ boolean isLimitPressed(uint8_t limitPin) {
     return true;
 }
 
-Motor::Motor(uint8_t enPin, uint8_t int1Pin, uint8_t int2Pin, uint8_t topLimit, uint8_t lowerLimit, u_int16_t timeout) 
+Motor::Motor(uint8_t enPin, uint8_t int1Pin, uint8_t int2Pin, uint8_t topLimit, uint8_t lowerLimit, u_int32_t timeout)
     : enPin(enPin), int1Pin(int1Pin), int2Pin(int2Pin), topLimit(topLimit), lowerLimit(lowerLimit), timeout(timeout) {
     pinMode(enPin, OUTPUT);
     pinMode(int1Pin, OUTPUT);

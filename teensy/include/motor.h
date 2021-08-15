@@ -10,7 +10,7 @@ enum MotorDirection {
 
 class Motor {
 public:
-    Motor(uint8_t enPin, uint8_t int1Pin, uint8_t int2Pin, uint8_t topLimit, uint8_t lowerLimit, uint16_t timeout);
+    Motor(uint8_t enPin, uint8_t int1Pin, uint8_t int2Pin, uint8_t topLimit, uint8_t lowerLimit, u_int32_t timeout);
 
     void startMotor(MotorDirection startDirection);
 
@@ -37,7 +37,7 @@ private:
     const uint8_t topLimit;
     const uint8_t lowerLimit;
 
-    const uint16_t timeout;
+    const u_int32_t timeout;
 
     bool moving = false;
     MotorDirection direction = MotorDirection::UP;
