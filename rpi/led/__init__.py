@@ -22,7 +22,7 @@ class LEDs:
         # Use a lock to access the DMX Controller. Not clear if this is needed, but better be safe than worry.
         self.lock = threading.Lock()
         self.teensy = Teensy()
-        self.em = ErrorManager(__name__)
+        self.em = ErrorManager(__name__, 5)
 
     def __activate_led(self, led_number):
         with self.lock:
