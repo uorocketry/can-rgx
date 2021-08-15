@@ -3,11 +3,13 @@ Code for interacting with the Teensy. The main use of this file is to provide a 
 avoid possible race conditions.
 """
 import serial
+import glob
 
 
 class Teensy:
     def __init__(self):
-        self.ser = serial.Serial('/dev/ttyACM0', 115200, timeout=1)
+        ports = glob.glob('/dev/ttyACM[0-9]*')
+        self.ser = serial.Serial(ports[0], 115200, timeout=1)
 
     def activate_motor(self, motor_number, motor_direction):
         data = ((motor_number & 1) << 1) | (motor_direction & 1)
