@@ -28,9 +28,9 @@ class MotorControl:
                 time.sleep(1)
 
                 if motor_number == 0:
-                    status = self.teensy.get_motor_state() >> 2
+                    status = (self.teensy.get_motor_state() >> 2) & 0b11
                 else:
-                    status = self.teensy.get_motor_state()
+                    status = self.teensy.get_motor_state() & 0b11
 
             logger.info("Motor {} stopped".format(motor_number + 1))
 
