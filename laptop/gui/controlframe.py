@@ -106,7 +106,7 @@ class LEDFrame(tk.Frame):
     def activate_element(self, index):
         logger = logging.getLogger(__name__)
 
-        countdown = 5
+        countdown = 3
         while countdown > 0:
             logger.info(f"LED {index + 1}: {countdown}")
             time.sleep(1)
