@@ -36,7 +36,7 @@ const uint8_t I2C_ADDRESS = 0x8;
 const uint64_t SERIAL_RATE = 9600;
 
 // How long to wait in milliseconds before stopping a motor automatically
-const uint32_t MOTOR_TIMEOUT_MILLI = 75 * 1000;
+const uint32_t MOTOR_TIMEOUT_MILLI = 60 * 1000;
 
 // Store what we should send to the Pi for the i2C value
 I2CSendingValue i2cSendingValue = I2CSendingValue::MOTOR;
