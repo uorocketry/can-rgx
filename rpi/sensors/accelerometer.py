@@ -169,4 +169,4 @@ class Accelerometer(SensorLogging):
         while True:
             self.wait_until_data_ready()
             val = self.get_acceleration_data()
-            self.sensorlogger.info([time.time() * 100, val["x"], val["y"], val["z"]])
+            self.sensorlogger.info([time.time() * 1000, val["x"], val["y"], val["z"]])

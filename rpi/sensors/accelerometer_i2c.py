@@ -1,5 +1,7 @@
 import time
+
 import smbus
+
 from rpi.sensors.sensorlogging import SensorLogging
 from shared.customlogging.errormanager import ErrorManager
 
@@ -142,7 +144,7 @@ class Accelerometer(SensorLogging):
         while True:
             try:
                 acceleration = self.get_acceleration_data()
-                self.sensorlogger.info([time.time() * 100, acceleration["x"], acceleration["y"], acceleration["z"]])
+                self.sensorlogger.info([time.time() * 1000, acceleration["x"], acceleration["y"], acceleration["z"]])
 
                 em.resolve("Acceleration sensor is now working correctly", "accel", False)
             except OSError:
