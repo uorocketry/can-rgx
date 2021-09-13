@@ -1,6 +1,9 @@
 # uORocketry CAN-RGX 2021
 
-![](images/CAN_GRX_Logo.png)
+<p align="center">
+  <img src="./images/CAN_GRX_Logo.png" />
+</p>
+
 
 This is the uORocketry code for the 2021 Canadian Reduced Gravity Experiment Design Challenge (CAN-RGX).
 
